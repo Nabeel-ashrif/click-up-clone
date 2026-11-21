@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db, initDatabase } from '@/lib/db';
+import { supabaseAdmin } from '@/lib/supabase';
+import { initDatabase } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 export async function PATCH(
@@ -12,49 +13,52 @@ export async function PATCH(
     const body = await req.json();
     const { role, fullName, isFrozen, newPassword } = body;
 
-    // Verify user exists
-    const existing = await db.execute({
-      sql: 'SELECT * FROM users WHERE id = ? LIMIT 1',
-      args: [userId],
-    });
-
-    if (existing.rows.length === 0) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    const updates: string[] = [];
-    const args: any[] = [];
+    const updates: Record<string, any> = {};
 
     if (role !== undefined) {
-      updates.push('role = ?');
-      args.push(role);
+      updates.role = role;
     }
 
     if (fullName !== undefined && fullName.trim()) {
-      updates.push('full_name = ?');
-      args.push(fullName.trim());
+      updates.full_name = fullName.trim();
     }
 
     if (isFrozen !== undefined) {
-      updates.push('is_frozen = ?');
-      args.push(isFrozen ? 1 : 0);
+      updates.is_frozen = isFrozen ? 1 : 0;
     }
 
     if (newPassword && newPassword.trim()) {
-      const hash = await bcrypt.hash(newPassword.trim(), 10);
-      updates.push('password_hash = ?');
-      args.push(hash);
+      updates.password_hash = await bcrypt.hash(newPassword.trim(), 10);
     }
 
-    if (updates.length > 0) {
-      args.push(userId);
-      await db.execute({
-        sql: `UPDATE users SET ${updates.join(', ')} WHERE id = ?`,
-        args,
-      });
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ success: true, message: 'No updates provided' });
     }
 
-    return NextResponse.json({ success: true, message: 'Member account updated successfully' });
+    const { data: updated, error } = await supabaseAdmin
+      .from('users')
+      .update(updates)
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      member: {
+        id: String(updated.id),
+        username: String(updated.username || ''),
+        email: String(updated.email || ''),
+        fullName: String(updated.full_name),
+        initials: String(updated.initials || 'U'),
+        color: String(updated.color || '#0f766e'),
+        role: String(updated.role || 'member'),
+        isFrozen: updated.is_frozen === 1,
+      },
+    });
   } catch (error: any) {
     console.error('Update member error:', error);
     return NextResponse.json(
@@ -72,29 +76,19 @@ export async function DELETE(
     await initDatabase();
     const userId = params.id;
 
-    // Check if trying to delete owner
-    const existing = await db.execute({
-      sql: 'SELECT role FROM users WHERE id = ? LIMIT 1',
-      args: [userId],
-    });
+    const { error } = await supabaseAdmin
+      .from('users')
+      .delete()
+      .eq('id', userId);
 
-    if (existing.rows.length === 0) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    if (existing.rows[0].role === 'owner') {
-      return NextResponse.json(
-        { error: 'Cannot delete the Workspace Owner account' },
-        { status: 403 }
-      );
-    }
-
-    await db.execute({
-      sql: 'DELETE FROM users WHERE id = ?',
-      args: [userId],
+    return NextResponse.json({
+      success: true,
+      message: 'Member removed from workspace successfully',
     });
-
-    return NextResponse.json({ success: true, message: 'Member deleted from workspace' });
   } catch (error: any) {
     console.error('Delete member error:', error);
     return NextResponse.json(
