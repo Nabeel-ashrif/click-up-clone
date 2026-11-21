@@ -17,6 +17,8 @@ import {
   EyeOff,
   AlertCircle,
   ShieldCheck,
+  Building2,
+  Edit3,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { ColorTheme, ZoomLevel, FontFamily } from '@/lib/types';
@@ -28,8 +30,14 @@ export function PreferencesModal() {
     preferences,
     updatePreferences,
     currentUser,
+    workspace,
+    updateWorkspaceName,
     showToast,
   } = useApp();
+
+  // Company Name state for Space Owner
+  const [editingCompany, setEditingCompany] = useState(false);
+  const [companyNameInput, setCompanyNameInput] = useState(workspace.name);
 
   // Change Password state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -336,6 +344,85 @@ export function PreferencesModal() {
               })}
             </div>
           </div>
+
+          {/* Section: Company Entity Name (Space Owner Only) */}
+          {currentUser.role === 'owner' && (
+            <div className="pt-4 border-t border-slate-200">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Company Entity Name</span>
+                </label>
+                <span className="text-[10px] bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded font-bold">
+                  Space Owner Privilege
+                </span>
+              </div>
+
+              <div className="p-4 bg-amber-50/40 border border-amber-200/80 rounded-xl">
+                {editingCompany ? (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (companyNameInput.trim()) {
+                        updateWorkspaceName(workspace.id, companyNameInput.trim());
+                        setEditingCompany(false);
+                      }
+                    }}
+                    className="flex items-center gap-2"
+                  >
+                    <input
+                      type="text"
+                      value={companyNameInput}
+                      onChange={(e) => setCompanyNameInput(e.target.value)}
+                      placeholder="Enter company name..."
+                      className="flex-1 px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-teal-700/40"
+                      autoFocus
+                      required
+                    />
+                    <button
+                      type="submit"
+                      disabled={!companyNameInput.trim()}
+                      className="px-3.5 py-1.5 bg-teal-800 hover:bg-teal-900 text-white rounded-lg text-xs font-bold shadow-xs disabled:opacity-50"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCompanyNameInput(workspace.name);
+                        setEditingCompany(false);
+                      }}
+                      className="px-3 py-1.5 text-slate-600 hover:text-slate-800 text-xs font-medium"
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                ) : (
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <span>{workspace.name}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Only you (Space Owner) have the exclusive right to rename this company entity.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCompanyNameInput(workspace.name);
+                        setEditingCompany(true);
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-amber-300 hover:bg-amber-100/60 text-amber-900 rounded-lg text-xs font-bold shadow-2xs transition-colors"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Rename Company</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Section 4: Security & Change Password */}
           <div className="pt-4 border-t border-slate-200">

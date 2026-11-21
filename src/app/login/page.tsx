@@ -2,17 +2,12 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import {
   Lock,
   User,
   Eye,
   EyeOff,
   AlertCircle,
-  Sparkles,
-  ArrowRight,
-  Database,
-  Shield,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 
@@ -91,12 +86,6 @@ export default function LoginPage() {
       setErrorMsg(err.message || 'Registration error');
       setIsLoading(false);
     }
-  };
-
-  const quickLoginAs = (userObj: { id: string; name: string; role: string }) => {
-    setIdentifier(userObj.id);
-    setPassword('1000');
-    setMode('signin');
   };
 
   return (
@@ -294,97 +283,9 @@ export default function LoginPage() {
               </button>
             </form>
           )}
-
-          {/* Quick One-Click Team Login Shortcuts */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                <span>Quick Team Logins</span>
-              </span>
-              <span className="font-mono text-teal-800 font-semibold bg-teal-50 px-2 py-0.5 rounded">Default Password: 1000</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() =>
-                  quickLoginAs({
-                    id: 'nabeel',
-                    name: 'Nabeel',
-                    role: 'Space Owner',
-                  })
-                }
-                className="p-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-teal-700 text-left transition-colors group shadow-2xs"
-              >
-                <div className="font-bold text-slate-900 group-hover:text-teal-800">Nabeel</div>
-                <div className="text-[10px] text-teal-800 font-semibold flex items-center gap-1">
-                  <Shield className="w-2.5 h-2.5" />
-                  <span>Space Owner (ID: nabeel)</span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  quickLoginAs({
-                    id: 'maham',
-                    name: 'Maham',
-                    role: 'Admin',
-                  })
-                }
-                className="p-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-teal-700 text-left transition-colors group shadow-2xs"
-              >
-                <div className="font-bold text-slate-900 group-hover:text-teal-800">Maham</div>
-                <div className="text-[10px] text-teal-800 font-semibold flex items-center gap-1">
-                  <Shield className="w-2.5 h-2.5" />
-                  <span>Admin (ID: maham)</span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  quickLoginAs({
-                    id: 'anees',
-                    name: 'Anees',
-                    role: 'Member',
-                  })
-                }
-                className="p-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-amber-600 text-left transition-colors group shadow-2xs"
-              >
-                <div className="font-bold text-slate-900 group-hover:text-amber-800">Anees</div>
-                <div className="text-[10px] text-amber-800 font-semibold">Member (ID: anees)</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  quickLoginAs({
-                    id: 'waqas',
-                    name: 'Waqas',
-                    role: 'Viewer',
-                  })
-                }
-                className="p-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-rose-700 text-left transition-colors group shadow-2xs"
-              >
-                <div className="font-bold text-slate-900 group-hover:text-rose-800">Waqas</div>
-                <div className="text-[10px] text-rose-800 font-semibold">Viewer (ID: waqas)</div>
-              </button>
-            </div>
-          </div>
-
-          {/* Database Footer info */}
-          <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <Database className="w-3.5 h-3.5 text-teal-700" />
-              <span>Database Engine:</span>
-            </span>
-            <span className="font-mono text-teal-800 font-bold">Supabase Cloud PostgreSQL</span>
-          </div>
         </div>
 
-        {/* Footer Help link matching ClickUp reference */}
+        {/* Footer info */}
         <div className="mt-6 text-center text-xs text-slate-400">
           <span>Internal Team Project Management System</span>
         </div>

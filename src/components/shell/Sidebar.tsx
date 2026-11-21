@@ -223,14 +223,14 @@ export function Sidebar() {
         }`}
       >
         {!isCollapsed && (
-          <div className="relative flex-1 mr-1">
+          <div className="relative flex-1 mr-1 flex items-center gap-1">
             <button
               type="button"
               onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
-              className={`w-full flex items-center gap-2 p-1.5 rounded-lg text-left transition-colors group ${
+              className={`flex-1 flex items-center gap-2 p-1.5 rounded-lg text-left transition-colors group ${
                 isDark ? 'hover:bg-[#27292d]' : 'hover:bg-[#f0ede6]'
               }`}
-              title="Click to Switch Company or Manage Entities"
+              title="Click to Switch Company or Rename Entity"
             >
               <div
                 className={`w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0 shadow-xs border p-0.5 ${
@@ -266,6 +266,25 @@ export function Sidebar() {
                 </div>
               </div>
             </button>
+
+            {currentUser.role === 'owner' && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditCompanyName(workspace.name);
+                  setIsRenameCompanyModalOpen(true);
+                }}
+                className={`p-1.5 rounded-lg transition-colors flex-shrink-0 ${
+                  isDark
+                    ? 'text-amber-400 hover:text-white hover:bg-[#27292d]'
+                    : 'text-amber-700 hover:text-amber-900 hover:bg-amber-100/70'
+                }`}
+                title="Space Owner Privilege: Rename Company Entity"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+              </button>
+            )}
 
             {/* Company / Entity Switcher Popover */}
             {isWorkspaceMenuOpen && (
@@ -356,14 +375,19 @@ export function Sidebar() {
                         setIsRenameCompanyModalOpen(true);
                         setIsWorkspaceMenuOpen(false);
                       }}
-                      className={`w-full flex items-center gap-2 p-1.5 rounded-lg text-xs transition-colors ${
+                      className={`w-full flex items-center justify-between p-2 rounded-xl text-xs font-bold transition-all ${
                         isDark
-                          ? 'text-slate-300 hover:text-white hover:bg-[#282a2f]'
-                          : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+                          ? 'bg-amber-950/40 text-amber-300 hover:bg-amber-950/70 border border-amber-800/60'
+                          : 'bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-300'
                       }`}
                     >
-                      <Edit3 className="w-3.5 h-3.5 text-amber-500" />
-                      <span>Rename &quot;{workspace.name}&quot;</span>
+                      <div className="flex items-center gap-2">
+                        <Edit3 className="w-3.5 h-3.5 text-amber-600" />
+                        <span>Rename Company</span>
+                      </div>
+                      <span className="text-[10px] bg-amber-200/80 text-amber-900 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                        Owner
+                      </span>
                     </button>
                   )}
 
@@ -1040,10 +1064,10 @@ export function Sidebar() {
                 ? 'text-slate-400 hover:bg-[#222428] hover:text-white'
                 : 'text-slate-600 hover:bg-[#eeebe3] hover:text-slate-950 font-medium'
           }`}
-          title="Team Roles & Workspace Settings"
+          title={currentUser.role === 'owner' ? "Company & Team Settings (Owner Authority)" : "Team Roles & Workspace Settings"}
         >
           <Settings className={`w-4 h-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
-          {!isCollapsed && <span>Team Settings</span>}
+          {!isCollapsed && <span>{currentUser.role === 'owner' ? 'Company & Team Settings' : 'Team Settings'}</span>}
         </Link>
 
         {!isCollapsed ? (
