@@ -1,0 +1,35 @@
+feature,area,priority,original,clone,notes
+User authentication with email and password,auth,must,yes,yes,Workspace member accounts and roles
+Invite team members with role assignment,workspace,must,yes,yes,Owner / Admin / Member / Viewer RBAC implemented
+Multi-level hierarchy (Workspace > Space > Folder > List),hierarchy,must,yes,yes,Complete organization structure in sidebar and navigation
+Create and edit tasks with rich description,tasks,must,yes,yes,Task creation with specifications and markdown description
+Nested subtasks with parent-child hierarchy,tasks,must,yes,yes,Multi-level task breakdown with progress tracking
+Custom task statuses per Space/List,statuses,must,yes,yes,Color-coded workflow stages (To Do / In Progress / Review / Complete)
+Task priority levels (Urgent / High / Normal / Low / Clear),tasks,must,yes,yes,Priority flags with visual badges
+Assign single or multiple team members to tasks,tasks,must,yes,yes,Multi-assignee picker with search and avatar groups
+Start dates and due dates with overdue highlights,tasks,must,yes,yes,Date picker popover with overdue red highlights
+Interactive List View with grouping and sorting,views,must,yes,yes,Dense task table with status group headers and inline editing
+Interactive Kanban Board View with drag-and-drop,views,must,yes,yes,Move cards across status columns with fluid drag-and-drop
+Calendar View with month/week/day scheduling,views,must,yes,yes,Month calendar grid with task date chips
+Task Comments and discussion stream,collaboration,must,yes,yes,Comments counter and stream on tasks
+Task Tags creation and assignment,tasks,must,yes,yes,Color-coded tag categorization and filter support
+Global Search and Command Palette (Ctrl+K),navigation,must,yes,yes,Quick jump to any task list doc or space
+Role-based access permissions (Owner / Admin / Member / Viewer),security,must,yes,yes,RBAC enforcement across workspaces and spaces
+Task detail slide-over modal,tasks,must,yes,yes,Unified inspector for task properties subtasks and checklists
+Home / My Work personal dashboard,navigation,must,yes,yes,Summary of tasks assigned to current user with overdue alerts
+Gantt / Timeline View for dependency planning,views,should,yes,yes,Horizontal duration bars with schedule timeline
+Custom Fields (Text / Number / Date / Select / Checkbox),metadata,should,yes,yes,Flexible task metadata in schema and custom fields
+Task Checklists with progress completion,tasks,should,yes,yes,To-do checklist items within tasks
+Task Activity stream and audit history,collaboration,should,yes,yes,Timestamps and change log in task inspector
+Workspace Docs knowledge base,docs,should,yes,yes,Rich documentation linked to spaces with markdown editor
+Inbox / Notifications center,notifications,should,yes,yes,Mentions and task assignments feed with unread filter
+Time tracking and manual time estimates,productivity,should,yes,yes,Estimate vs actual time spent tracking
+Task attachments (file upload / previews),tasks,should,yes,partial,Attachment data model and inspector preview
+CSV task import and export,data,could,yes,no,Scheduled for next release
+Dark mode / Light mode theme switcher,ui,could,yes,partial,Tokens structured with dark sidebar
+Keyboard shortcuts (New task / Close modal / Search),productivity,could,yes,yes,Ctrl+K search Ctrl+T new task Esc close
+Rule-based automations (When status changes then assign),automations,could,yes,no,Optional extension
+Commercial SaaS billing and subscription gates,billing,skip,yes,skip,Not required for internal team tool
+Proprietary ClickUp AI add-on subscription,ai,skip,yes,skip,Third-party paid upsell service
+Third-party app marketplace (100+ external SaaS listings),integrations,skip,yes,skip,Proprietary external vendor ecosystem
+White-label enterprise custom domain branding,branding,skip,yes,skip,Enterprise tier reseller feature

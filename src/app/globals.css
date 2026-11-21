@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #f8f7f4; /* Off-white warm major base */
+  --color-surface: #ffffff;
+  --color-surface-hover: #f2efe9;
+  --color-surface-active: #ebe7de;
+  --color-sidebar: #0f172a; /* Deep Navy */
+  --color-sidebar-surface: #1e293b;
+  --color-sidebar-text: #e2e8f0;
+  --color-sidebar-muted: #94a3b8;
+  --color-border: #e4e1d8;
+  --color-border-subtle: #ece9e1;
+  --color-border-input: #cbd5e1;
+  --color-text: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748b;
+
+  /* Executive Brand Colors */
+  --color-accent: #0f766e; /* Teal Green */
+  --color-accent-hover: #115e59;
+  --color-on-accent: #ffffff;
+  --color-navy: #1e3a5f;
+  --color-maroon: #881337;
+  --color-gold: #d97706;
+
+  /* Priority & Status Roles */
+  --color-priority-urgent: #881337; /* Maroon */
+  --color-priority-high: #d97706;   /* Golden Yellow */
+  --color-priority-normal: #1e3a5f; /* Navy Blue */
+  --color-priority-low: #64748b;    /* Slate */
+
+  --color-status-open: #64748b;     /* Slate */
+  --color-status-progress: #1e3a5f; /* Navy Blue */
+  --color-status-review: #d97706;   /* Golden Yellow */
+  --color-status-done: #0f766e;     /* Teal Green */
+
+  --color-danger: #881337;
+  --color-danger-surface: #fff1f2;
+  --color-success: #0f766e;
+  --color-success-surface: #f0fdfa;
+  --color-warning: #d97706;
+  --color-warning-surface: #fffbeb;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 9999px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
+  --shadow-dropdown: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+  --shadow-modal: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+}
+
+/* ─── Per-User Color Themes ─── */
+html[data-theme='dark'] {
+  --color-bg: #090d16;
+  --color-surface: #111827;
+  --color-surface-hover: #1f2937;
+  --color-surface-active: #374151;
+  --color-sidebar: #050811;
+  --color-sidebar-surface: #0e1424;
+  --color-border: #1e293b;
+  --color-border-subtle: #172033;
+  --color-border-input: #334155;
+  --color-text: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-accent: #14b8a6;
+  --color-accent-hover: #0d9488;
+}
+
+html[data-theme='navy'] {
+  --color-bg: #f1f5f9;
+  --color-surface: #ffffff;
+  --color-surface-hover: #e2e8f0;
+  --color-surface-active: #cbd5e1;
+  --color-sidebar: #0a1128;
+  --color-sidebar-surface: #1c2541;
+  --color-border: #cbd5e1;
+  --color-border-subtle: #e2e8f0;
+  --color-text: #0f172a;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+}
+
+html[data-theme='crimson'] {
+  --color-bg: #faf5f5;
+  --color-surface: #ffffff;
+  --color-surface-hover: #fbe8e8;
+  --color-surface-active: #f7d2d2;
+  --color-sidebar: #2b0b14;
+  --color-sidebar-surface: #431220;
+  --color-border: #f2d0d0;
+  --color-border-subtle: #f8e5e5;
+  --color-text: #3c0c17;
+  --color-accent: #9f1239;
+  --color-accent-hover: #881337;
+}
+
+html[data-theme='emerald'] {
+  --color-bg: #f2f9f5;
+  --color-surface: #ffffff;
+  --color-surface-hover: #e0f2e9;
+  --color-surface-active: #c7e8d6;
+  --color-sidebar: #05241b;
+  --color-sidebar-surface: #0a382b;
+  --color-border: #c6e7d5;
+  --color-border-subtle: #e2f4eb;
+  --color-text: #064e3b;
+  --color-accent: #059669;
+  --color-accent-hover: #047857;
+}
+
+/* ─── Per-User Font Families ─── */
+html[data-font='inter'] body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+html[data-font='jakarta'] body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+}
+html[data-font='mono'] body {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace !important;
+}
+html[data-font='serif'] body {
+  font-family: 'Merriweather', Georgia, serif !important;
+}
+
+body {
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
