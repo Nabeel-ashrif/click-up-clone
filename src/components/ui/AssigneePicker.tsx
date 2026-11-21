@@ -11,9 +11,10 @@ interface AssigneePickerProps {
   onChange?: (newAssigneeIds: string[]) => void;
   readOnly?: boolean;
   dropUp?: boolean;
+  align?: 'left' | 'right';
 }
 
-export function AssigneePicker({ assigneeIds, onChange, readOnly = false, dropUp = false }: AssigneePickerProps) {
+export function AssigneePicker({ assigneeIds, onChange, readOnly = false, dropUp = false, align = 'left' }: AssigneePickerProps) {
   const { users, currentUser } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -75,7 +76,7 @@ export function AssigneePicker({ assigneeIds, onChange, readOnly = false, dropUp
       </button>
 
       {isOpen && (
-        <div className={`absolute left-0 w-56 bg-white rounded-md shadow-dropdown border border-border p-2 z-[9999] animate-in fade-in zoom-in-95 duration-100 ${dropUp ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
+        <div className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} w-56 bg-white rounded-md shadow-dropdown border border-border p-2 z-[9999] animate-in fade-in zoom-in-95 duration-100 ${dropUp ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
           <div className="flex items-center justify-between pb-1.5 border-b border-border mb-1.5">
             <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">
               Assignees

@@ -40,6 +40,7 @@ import {
   Sun,
   Moon,
   Trash2,
+  KeyRound,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Avatar } from '../ui/Avatar';
@@ -1139,6 +1140,20 @@ export function Sidebar() {
                       </button>
                     );
                   })}
+                </div>
+
+                <div className="pt-2 mt-1 border-t border-slate-100 flex flex-col gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPreferencesModalOpen(true);
+                      setIsUserMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 p-1.5 rounded-lg text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                  >
+                    <KeyRound className="w-3.5 h-3.5 text-teal-800" />
+                    <span>Change Password</span>
+                  </button>
                 </div>
               </div>
             )}

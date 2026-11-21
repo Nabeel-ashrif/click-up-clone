@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   X,
   Palette,
@@ -11,6 +11,12 @@ import {
   Monitor,
   Moon,
   Sun,
+  KeyRound,
+  Lock,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  ShieldCheck,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { ColorTheme, ZoomLevel, FontFamily } from '@/lib/types';
@@ -22,7 +28,69 @@ export function PreferencesModal() {
     preferences,
     updatePreferences,
     currentUser,
+    showToast,
   } = useApp();
+
+  // Change Password state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [pwLoading, setPwLoading] = useState(false);
+  const [pwError, setPwError] = useState('');
+  const [pwSuccess, setPwSuccess] = useState('');
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwError('');
+    setPwSuccess('');
+
+    if (!currentPassword) {
+      setPwError('Please enter your current password.');
+      return;
+    }
+    if (!newPassword) {
+      setPwError('Please enter a new password.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPwError('New passwords do not match.');
+      return;
+    }
+    if (newPassword.length < 3) {
+      setPwError('Password must be at least 3 characters long.');
+      return;
+    }
+
+    try {
+      setPwLoading(true);
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: currentUser.username || currentUser.id,
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setPwError(data.error || 'Failed to update password');
+      } else {
+        setPwSuccess('Password changed successfully! You can now use your new password.');
+        showToast('Password updated successfully');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      }
+    } catch {
+      setPwError('Connection error while updating password');
+    } finally {
+      setPwLoading(false);
+    }
+  };
 
   if (!isPreferencesModalOpen) return null;
 
@@ -269,37 +337,108 @@ export function PreferencesModal() {
             </div>
           </div>
 
-          {/* Section 3: Font Family */}
-          <div>
+          {/* Section 4: Security & Change Password */}
+          <div className="pt-4 border-t border-slate-200">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Type className="w-3.5 h-3.5 text-teal-800" />
-                <span>Typography & Font Family</span>
+                <KeyRound className="w-3.5 h-3.5 text-teal-800" />
+                <span>Account Security & Change Password</span>
               </label>
+              <span className="text-[11px] text-slate-500 font-medium">Logged in as @{currentUser.username || currentUser.fullName}</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fonts.map((f) => {
-                const isSelected = preferences.font === f.id;
-                return (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => updatePreferences({ font: f.id })}
-                    className={`p-3 rounded-xl border text-left transition-all ${
-                      isSelected
-                        ? 'border-teal-700 bg-teal-50/50 ring-2 ring-teal-700/30'
-                        : 'border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs text-slate-900">{f.name}</span>
-                      <span className="text-[11px] font-semibold text-slate-400">{f.sample}</span>
+            <div className="p-4 bg-slate-50/80 border border-slate-200 rounded-xl space-y-3">
+              <p className="text-[11px] text-slate-500">
+                Default password for your account is <strong>1000</strong>. Enter your current password below to set a new password.
+              </p>
+
+              {pwError && (
+                <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                  <span>{pwError}</span>
+                </div>
+              )}
+
+              {pwSuccess && (
+                <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span>{pwSuccess}</span>
+                </div>
+              )}
+
+              <form onSubmit={handlePasswordChange} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Current Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showCurrentPw ? 'text' : 'password'}
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="e.g. 1000"
+                        className="w-full px-3 py-1.5 pr-8 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-700/40"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPw(!showCurrentPw)}
+                        className="absolute right-2 top-2 text-slate-400 hover:text-slate-600"
+                      >
+                        {showCurrentPw ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
                     </div>
-                    <p className="text-[10px] text-slate-500 leading-snug">{f.preview}</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showNewPw ? 'text' : 'password'}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="New password"
+                        className="w-full px-3 py-1.5 pr-8 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-700/40"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPw(!showNewPw)}
+                        className="absolute right-2 top-2 text-slate-400 hover:text-slate-600"
+                      >
+                        {showNewPw ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm password"
+                      className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-700/40"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={pwLoading || !currentPassword || !newPassword || !confirmPassword}
+                    className="px-4 py-1.5 text-xs font-bold text-white bg-teal-800 hover:bg-teal-900 rounded-lg shadow-xs disabled:opacity-50 transition-all"
+                  >
+                    {pwLoading ? 'Updating Password...' : 'Update Password'}
                   </button>
-                );
-              })}
+                </div>
+              </form>
             </div>
           </div>
         </div>

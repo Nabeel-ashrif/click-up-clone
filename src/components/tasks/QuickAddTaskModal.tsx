@@ -139,15 +139,15 @@ export function QuickAddTaskModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-100"
+      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs overflow-y-auto p-3 sm:p-4 flex justify-center items-start sm:items-center animate-in fade-in duration-100"
       onClick={() => setIsQuickAddOpen(false)}
     >
       <div
-        className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 text-slate-800"
+        className="w-full max-w-xl my-auto bg-white rounded-2xl shadow-2xl border border-slate-200 text-slate-800 overflow-hidden flex flex-col max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-[#f8f7f4] border-b border-slate-200">
+        <div className="flex items-center justify-between px-6 py-4 bg-[#f8f7f4] border-b border-slate-200 flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-teal-800 text-white flex items-center justify-center shadow-xs">
               <CheckSquare className="w-4 h-4" />
@@ -168,7 +168,7 @@ export function QuickAddTaskModal() {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
           {/* Dual Hierarchy Dropdowns: Space & Destination / Parent Task */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
             {/* Dropdown 1: Assigned / Permitted Space */}
@@ -309,7 +309,7 @@ export function QuickAddTaskModal() {
 
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] font-semibold text-slate-500">Assign:</span>
-              <AssigneePicker assigneeIds={assigneeIds} onChange={setAssigneeIds} dropUp />
+              <AssigneePicker assigneeIds={assigneeIds} onChange={setAssigneeIds} dropUp align="right" />
             </div>
           </div>
 

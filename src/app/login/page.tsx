@@ -95,7 +95,7 @@ export default function LoginPage() {
 
   const quickLoginAs = (userObj: { id: string; name: string; role: string }) => {
     setIdentifier(userObj.id);
-    setPassword('password123');
+    setPassword('1000');
     setMode('signin');
   };
 
@@ -300,9 +300,9 @@ export default function LoginPage() {
             <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                <span>One-Click Team Logins</span>
+                <span>Quick Team Logins</span>
               </span>
-              <span className="font-mono text-slate-400 font-normal">pw: password123</span>
+              <span className="font-mono text-teal-800 font-semibold bg-teal-50 px-2 py-0.5 rounded">Default Password: 1000</span>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs">
@@ -310,17 +310,17 @@ export default function LoginPage() {
                 type="button"
                 onClick={() =>
                   quickLoginAs({
-                    id: 'alex',
-                    name: 'Alex Chen',
-                    role: 'Owner',
+                    id: 'nabeel',
+                    name: 'Nabeel',
+                    role: 'Space Owner',
                   })
                 }
                 className="p-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-teal-700 text-left transition-colors group shadow-2xs"
               >
-                <div className="font-bold text-slate-900 group-hover:text-teal-800">Alex Chen</div>
+                <div className="font-bold text-slate-900 group-hover:text-teal-800">Nabeel</div>
                 <div className="text-[10px] text-teal-800 font-semibold flex items-center gap-1">
                   <Shield className="w-2.5 h-2.5" />
-                  <span>Owner (ID: alex)</span>
+                  <span>Space Owner (ID: nabeel)</span>
                 </div>
               </button>
 
@@ -328,17 +328,17 @@ export default function LoginPage() {
                 type="button"
                 onClick={() =>
                   quickLoginAs({
-                    id: 'maya',
-                    name: 'Maya Patel',
+                    id: 'maham',
+                    name: 'Maham',
                     role: 'Admin',
                   })
                 }
                 className="p-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-teal-700 text-left transition-colors group shadow-2xs"
               >
-                <div className="font-bold text-slate-900 group-hover:text-teal-800">Maya Patel</div>
+                <div className="font-bold text-slate-900 group-hover:text-teal-800">Maham</div>
                 <div className="text-[10px] text-teal-800 font-semibold flex items-center gap-1">
                   <Shield className="w-2.5 h-2.5" />
-                  <span>Admin (ID: maya)</span>
+                  <span>Admin (ID: maham)</span>
                 </div>
               </button>
 
@@ -346,30 +346,30 @@ export default function LoginPage() {
                 type="button"
                 onClick={() =>
                   quickLoginAs({
-                    id: 'jordan',
-                    name: 'Jordan Lee',
+                    id: 'anees',
+                    name: 'Anees',
                     role: 'Member',
                   })
                 }
                 className="p-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-amber-600 text-left transition-colors group shadow-2xs"
               >
-                <div className="font-bold text-slate-900 group-hover:text-amber-800">Jordan Lee</div>
-                <div className="text-[10px] text-amber-800 font-semibold">Member (ID: jordan)</div>
+                <div className="font-bold text-slate-900 group-hover:text-amber-800">Anees</div>
+                <div className="text-[10px] text-amber-800 font-semibold">Member (ID: anees)</div>
               </button>
 
               <button
                 type="button"
                 onClick={() =>
                   quickLoginAs({
-                    id: 'sam',
-                    name: 'Sam Taylor',
+                    id: 'waqas',
+                    name: 'Waqas',
                     role: 'Viewer',
                   })
                 }
                 className="p-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-rose-700 text-left transition-colors group shadow-2xs"
               >
-                <div className="font-bold text-slate-900 group-hover:text-rose-800">Sam Taylor</div>
-                <div className="text-[10px] text-rose-800 font-semibold">Viewer (ID: sam)</div>
+                <div className="font-bold text-slate-900 group-hover:text-rose-800">Waqas</div>
+                <div className="text-[10px] text-rose-800 font-semibold">Viewer (ID: waqas)</div>
               </button>
             </div>
           </div>
@@ -380,7 +380,7 @@ export default function LoginPage() {
               <Database className="w-3.5 h-3.5 text-teal-700" />
               <span>Database Engine:</span>
             </span>
-            <span className="font-mono text-teal-800 font-bold">SQLite (clickup.db)</span>
+            <span className="font-mono text-teal-800 font-bold">Supabase Cloud PostgreSQL</span>
           </div>
         </div>
 

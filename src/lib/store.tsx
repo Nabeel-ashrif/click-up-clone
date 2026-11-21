@@ -154,14 +154,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      const savedWs = localStorage.getItem('cu_workspaces_v2');
+      const savedWs = localStorage.getItem('cu_workspaces_v5');
       if (savedWs) {
         const parsed = JSON.parse(savedWs);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setWorkspaces(parsed);
         }
       }
-      const savedTasks = localStorage.getItem('cu_tasks_v2');
+      const savedTasks = localStorage.getItem('cu_tasks_v5');
       if (savedTasks) {
         const parsedTasks = JSON.parse(savedTasks);
         if (Array.isArray(parsedTasks)) {
@@ -174,11 +174,40 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setIsHydrated(true);
   }, []);
 
+  // Fetch real users and current session from Supabase API
+  useEffect(() => {
+    async function syncAuthAndMembers() {
+      try {
+        const [meRes, membersRes] = await Promise.all([
+          fetch('/api/auth/me'),
+          fetch('/api/members'),
+        ]);
+
+        if (membersRes.ok) {
+          const membersData = await membersRes.json();
+          if (membersData.success && Array.isArray(membersData.members) && membersData.members.length > 0) {
+            setUsers(membersData.members);
+          }
+        }
+
+        if (meRes.ok) {
+          const meData = await meRes.json();
+          if (meData.authenticated && meData.user) {
+            setCurrentUser(meData.user);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to sync auth/members:', err);
+      }
+    }
+    syncAuthAndMembers();
+  }, []);
+
   // Persist workspaces to localStorage
   useEffect(() => {
     if (!isHydrated || typeof window === 'undefined') return;
     try {
-      localStorage.setItem('cu_workspaces_v2', JSON.stringify(workspaces));
+      localStorage.setItem('cu_workspaces_v5', JSON.stringify(workspaces));
     } catch (e) {
       console.error('Error saving workspaces to localStorage', e);
     }
@@ -188,7 +217,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isHydrated || typeof window === 'undefined') return;
     try {
-      localStorage.setItem('cu_tasks_v2', JSON.stringify(tasks));
+      localStorage.setItem('cu_tasks_v5', JSON.stringify(tasks));
     } catch (e) {
       console.error('Error saving tasks to localStorage', e);
     }
