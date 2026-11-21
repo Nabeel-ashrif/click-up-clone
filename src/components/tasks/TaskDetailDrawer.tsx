@@ -35,12 +35,14 @@ import { AssigneePicker } from '../ui/AssigneePicker';
 import { DatePickerPopover } from '../ui/DatePickerPopover';
 import { Avatar } from '../ui/Avatar';
 import { Task } from '@/lib/types';
+import { TaskWorkflowStepper } from './TaskWorkflowStepper';
 
 export function TaskDetailDrawer() {
   const {
     selectedTaskId,
     setSelectedTaskId,
     tasks,
+    workspace,
     updateTask,
     deleteTask,
     addTask,
@@ -259,7 +261,7 @@ export function TaskDetailDrawer() {
         {/* Split Content Area */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left Column: Title, Description, Subtasks, Checklists, Comments */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex-1 overflow-y-auto p-6 space-y-5">
             {/* Task Title Input */}
             <div className="relative group">
               <input
@@ -271,6 +273,12 @@ export function TaskDetailDrawer() {
                 placeholder="Task title..."
               />
             </div>
+
+            {/* Visual Lifecycle Stepper Pipeline */}
+            <TaskWorkflowStepper
+              task={task}
+              statuses={space?.statuses || workspace.spaces[0]?.statuses || []}
+            />
 
             {/* Description Section with Formatting Hint Bar */}
             <div className="space-y-1.5">
@@ -500,6 +508,7 @@ export function TaskDetailDrawer() {
                 statusId={task.statusId}
                 onChange={(statusId) => updateTask(task.id, { statusId })}
                 size="md"
+                task={task}
               />
             </div>
 

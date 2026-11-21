@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check } from 'lucide-react';
-import { Status } from '@/lib/types';
+import { ChevronDown, Check, Lock } from 'lucide-react';
+import { Status, Task } from '@/lib/types';
 import { useApp } from '@/lib/store';
+import { canTransitionTaskStatus } from '@/lib/permissions';
 
 interface StatusBadgeProps {
   statusId: string;
@@ -11,10 +12,11 @@ interface StatusBadgeProps {
   readOnly?: boolean;
   size?: 'sm' | 'md';
   dropUp?: boolean;
+  task?: Task;
 }
 
-export function StatusBadge({ statusId, onChange, readOnly = false, size = 'sm', dropUp = false }: StatusBadgeProps) {
-  const { workspace, getStatusById } = useApp();
+export function StatusBadge({ statusId, onChange, readOnly = false, size = 'sm', dropUp = false, task }: StatusBadgeProps) {
+  const { workspace, getStatusById, currentUser, showToast } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -76,29 +78,49 @@ export function StatusBadge({ statusId, onChange, readOnly = false, size = 'sm',
       </button>
 
       {isOpen && (
-        <div className={`absolute left-0 w-44 bg-white rounded-md shadow-dropdown border border-border py-1 z-[9999] animate-in fade-in zoom-in-95 duration-100 ${dropUp ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
-          <div className="px-2.5 py-1 text-[10px] font-bold text-text-muted uppercase tracking-wider">
-            Move Status
+        <div className={`absolute left-0 w-48 bg-white rounded-xl shadow-modal border border-slate-200 py-1.5 z-[9999] animate-in fade-in zoom-in-95 duration-100 ${dropUp ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
+          <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1 flex items-center justify-between">
+            <span>Move Phase</span>
+            <span className="text-[9px] text-teal-800 capitalize font-mono">{currentUser.role || 'Member'}</span>
           </div>
-          {allStatuses.map((st) => (
-            <button
-              key={st.id}
-              type="button"
-              onClick={() => {
-                onChange(st.id);
-                setIsOpen(false);
-              }}
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs text-left hover:bg-surface-hover transition-colors ${
-                st.id === statusId ? 'bg-surface font-semibold' : ''
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: st.color }} />
-                <span className="text-text font-medium">{st.name}</span>
-              </div>
-              {st.id === statusId && <Check className="w-3.5 h-3.5 text-accent" />}
-            </button>
-          ))}
+          {allStatuses.map((st) => {
+            const check = canTransitionTaskStatus(task, st, currentUser);
+            const isCurrent = st.id === statusId;
+            const isLocked = !check.allowed && !isCurrent;
+
+            return (
+              <button
+                key={st.id}
+                type="button"
+                onClick={() => {
+                  if (isLocked) {
+                    showToast(check.reason || 'Permission denied: Stage is locked.');
+                    return;
+                  }
+                  onChange(st.id);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-1.5 text-xs text-left transition-colors ${
+                  isCurrent
+                    ? 'bg-slate-100 font-bold text-slate-900'
+                    : isLocked
+                      ? 'opacity-50 hover:bg-amber-50/50 cursor-not-allowed text-slate-400'
+                      : 'hover:bg-slate-50 text-slate-700'
+                }`}
+                title={isLocked ? check.reason : `Set to ${st.name}`}
+              >
+                <div className="flex items-center gap-2 overflow-hidden truncate">
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: st.color }} />
+                  <span className="truncate">{st.name}</span>
+                </div>
+                {isCurrent ? (
+                  <Check className="w-3.5 h-3.5 text-teal-800 flex-shrink-0" />
+                ) : isLocked ? (
+                  <Lock className="w-3 h-3 text-amber-500 flex-shrink-0" />
+                ) : null}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

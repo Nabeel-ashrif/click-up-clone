@@ -13,12 +13,14 @@ import {
   Bell,
   Trash2,
   Edit3,
+  Lock,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { PriorityBadge } from '../ui/PriorityBadge';
 import { AvatarGroup } from '../ui/Avatar';
 import { Task, User } from '@/lib/types';
 import { format, isPast, isToday, parseISO } from 'date-fns';
+import { canTransitionTaskStatus } from '@/lib/permissions';
 
 export function BoardView({ listId }: { listId: string }) {
   const {
@@ -34,6 +36,8 @@ export function BoardView({ listId }: { listId: string }) {
     searchFilter,
     selectedPriorityFilter,
     selectedStatusFilter,
+    currentUser,
+    showToast,
   } = useApp();
 
   const currentList = getListById(listId);
@@ -93,6 +97,17 @@ export function BoardView({ listId }: { listId: string }) {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('text/plain');
     if (taskId) {
+      const task = tasks.find((t) => t.id === taskId);
+      const targetStatus = statuses.find((s) => s.id === targetStatusId);
+      if (task && targetStatus) {
+        const check = canTransitionTaskStatus(task, targetStatus, currentUser);
+        if (!check.allowed) {
+          showToast(check.reason || 'Permission denied: Stage transition not authorized.');
+          setDraggedTaskId(null);
+          setDragOverColumnId(null);
+          return;
+        }
+      }
       updateTask(taskId, { statusId: targetStatusId });
     }
     setDraggedTaskId(null);

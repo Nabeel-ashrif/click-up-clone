@@ -25,6 +25,7 @@ import { PriorityBadge, priorityConfig } from '../ui/PriorityBadge';
 import { AssigneePicker } from '../ui/AssigneePicker';
 import { DatePickerPopover } from '../ui/DatePickerPopover';
 import { Task, TaskPriority } from '@/lib/types';
+import { canTransitionTaskStatus } from '@/lib/permissions';
 
 export function ListView({ listId }: { listId: string }) {
   const {
@@ -40,6 +41,8 @@ export function ListView({ listId }: { listId: string }) {
     selectedPriorityFilter,
     selectedStatusFilter,
     activeGroupBy,
+    currentUser,
+    showToast,
   } = useApp();
 
   const currentList = getListById(listId);
@@ -222,17 +225,24 @@ export function ListView({ listId }: { listId: string }) {
                           {/* Quick Completion Checkbox Button */}
                           <button
                             type="button"
-                            onClick={() =>
-                              updateTask(task.id, {
-                                statusId: task.statusId === 'st-done' ? 'st-todo' : 'st-done',
-                              })
-                            }
+                            onClick={() => {
+                              const targetStatusId = task.statusId === 'st-done' ? 'st-todo' : 'st-done';
+                              const targetStatus = statuses.find((s) => s.id === targetStatusId);
+                              if (targetStatus) {
+                                const check = canTransitionTaskStatus(task, targetStatus, currentUser);
+                                if (!check.allowed) {
+                                  showToast(check.reason || 'Permission denied: Stage transition not authorized.');
+                                  return;
+                                }
+                              }
+                              updateTask(task.id, { statusId: targetStatusId });
+                            }}
                             className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${
                               task.statusId === 'st-done'
                                 ? 'bg-emerald-600 border-emerald-600 text-white shadow-2xs'
                                 : 'border-slate-300 hover:border-accent hover:bg-accent/5'
                             }`}
-                            title="Mark complete"
+                            title={task.statusId === 'st-done' ? 'Reopen task' : 'Mark complete'}
                           >
                             {task.statusId === 'st-done' && <Check className="w-3 h-3 stroke-[3]" />}
                           </button>

@@ -62,6 +62,7 @@ export function Sidebar() {
     toggleSpaceArchive,
     deleteSpace,
     currentUser,
+    setCurrentUser,
     users,
     tasks,
     notifications,
@@ -88,6 +89,7 @@ export function Sidebar() {
 
   // Multi-Company / Entity switcher & management state
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isCreateCompanyModalOpen, setIsCreateCompanyModalOpen] = useState(false);
   const [newCompanyName, setNewCompanyName] = useState('');
   const [isRenameCompanyModalOpen, setIsRenameCompanyModalOpen] = useState(false);
@@ -1044,44 +1046,102 @@ export function Sidebar() {
         </Link>
 
         {!isCollapsed ? (
-          <div
-            className={`flex items-center justify-between p-2 rounded-xl border transition-colors ${
-              isDark
-                ? 'bg-[#1f2124] border-[#2d3035] text-white'
-                : 'bg-white border-[#dedad0] text-slate-900 shadow-2xs'
-            }`}
-          >
-            <div className="flex items-center gap-2.5 overflow-hidden">
-              <Avatar user={currentUser} size="sm" showTooltip={false} />
-              <div className="truncate">
-                <div
-                  className={`text-xs font-semibold truncate ${
-                    isDark ? 'text-white' : 'text-slate-900'
-                  }`}
-                >
-                  {currentUser.fullName}
+          <div className="relative">
+            <div
+              className={`flex items-center justify-between p-2 rounded-xl border transition-colors ${
+                isDark
+                  ? 'bg-[#1f2124] border-[#2d3035] text-white'
+                  : 'bg-white border-[#dedad0] text-slate-900 shadow-2xs'
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-2.5 overflow-hidden flex-1 text-left group"
+                title="Click to Switch Active Role / Account"
+              >
+                <Avatar user={currentUser} size="sm" showTooltip={false} />
+                <div className="truncate">
+                  <div
+                    className={`text-xs font-semibold truncate ${
+                      isDark ? 'text-white' : 'text-slate-900'
+                    }`}
+                  >
+                    {currentUser.fullName}
+                  </div>
+                  <div className="text-[10px] text-teal-700 font-bold flex items-center gap-1 capitalize">
+                    <Shield className="w-2.5 h-2.5" />
+                    <span>{currentUser.role || 'Member'}</span>
+                    <ChevronsUpDown className="w-2.5 h-2.5 text-slate-400 group-hover:text-slate-600 ml-0.5" />
+                  </div>
                 </div>
-                <div className="text-[10px] text-teal-700 font-bold flex items-center gap-1 capitalize">
-                  <Shield className="w-2.5 h-2.5" />
-                  <span>{currentUser.role || 'Member'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await fetch('/api/auth/logout', { method: 'POST' });
+                  router.push('/login');
+                }}
+                className={`p-1.5 rounded-md transition-colors ${
+                  isDark
+                    ? 'hover:bg-[#2e3136] text-slate-400 hover:text-red-400'
+                    : 'hover:bg-rose-50 text-slate-400 hover:text-rose-600'
+                }`}
+                title="Sign Out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Quick Role / User Switcher Popover for Testing Stages */}
+            {isUserMenuOpen && (
+              <div
+                className={`absolute bottom-full left-0 mb-2 w-64 rounded-xl shadow-2xl p-2 z-50 border animate-in fade-in zoom-in-95 duration-100 ${
+                  isDark
+                    ? 'bg-[#1e2024] text-slate-200 border-[#2d3036]'
+                    : 'bg-white text-slate-800 border-slate-200 shadow-xl'
+                }`}
+              >
+                <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 mb-1 flex items-center justify-between">
+                  <span>Switch Role / User</span>
+                  <span className="text-[9px] bg-teal-50 text-teal-800 px-1.5 py-0.2 rounded font-bold">Testing</span>
+                </div>
+                <div className="space-y-1">
+                  {users.map((u) => {
+                    const isSelected = u.id === currentUser.id;
+                    return (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onClick={() => {
+                          setCurrentUser(u);
+                          setIsUserMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between p-2 rounded-lg text-xs text-left transition-colors ${
+                          isSelected
+                            ? 'bg-teal-50/70 border border-teal-200/80 font-bold text-teal-900'
+                            : isDark
+                              ? 'hover:bg-[#27292d] text-slate-300'
+                              : 'hover:bg-slate-50 text-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 overflow-hidden truncate">
+                          <Avatar user={u} size="xs" showTooltip={false} />
+                          <div className="truncate">
+                            <div className="font-semibold truncate">{u.fullName}</div>
+                            <div className="text-[10px] text-slate-400 capitalize flex items-center gap-1">
+                              <Shield className="w-2.5 h-2.5" />
+                              <span>{u.role || 'Member'}</span>
+                            </div>
+                          </div>
+                        </div>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-teal-800 flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-            </div>
-            <button
-              type="button"
-              onClick={async () => {
-                await fetch('/api/auth/logout', { method: 'POST' });
-                router.push('/login');
-              }}
-              className={`p-1.5 rounded-md transition-colors ${
-                isDark
-                  ? 'hover:bg-[#2e3136] text-slate-400 hover:text-red-400'
-                  : 'hover:bg-rose-50 text-slate-400 hover:text-rose-600'
-              }`}
-              title="Sign Out"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center gap-1 py-1">
