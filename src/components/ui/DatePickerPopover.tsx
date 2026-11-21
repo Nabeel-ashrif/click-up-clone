@@ -8,9 +8,10 @@ interface DatePickerPopoverProps {
   date?: string;
   onChange?: (newDate?: string) => void;
   readOnly?: boolean;
+  dropUp?: boolean;
 }
 
-export function DatePickerPopover({ date, onChange, readOnly = false }: DatePickerPopoverProps) {
+export function DatePickerPopover({ date, onChange, readOnly = false, dropUp = false }: DatePickerPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -79,7 +80,7 @@ export function DatePickerPopover({ date, onChange, readOnly = false }: DatePick
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 mt-1 w-52 bg-white rounded-md shadow-dropdown border border-border p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+        <div className={`absolute left-0 w-52 bg-white rounded-md shadow-dropdown border border-border p-2 z-[9999] animate-in fade-in zoom-in-95 duration-100 ${dropUp ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
           <div className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">
             Set Due Date
           </div>

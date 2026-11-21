@@ -134,7 +134,7 @@ export function ListView({ listId }: { listId: string }) {
         return (
           <div
             key={group.id}
-            className="border border-slate-200/90 rounded-xl bg-white overflow-hidden shadow-xs transition-shadow hover:shadow-card"
+            className="border border-slate-200/90 rounded-xl bg-white shadow-xs transition-shadow hover:shadow-card"
           >
             {/* Status / Priority Group Header */}
             <div

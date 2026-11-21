@@ -9,6 +9,7 @@ interface PriorityBadgeProps {
   onChange?: (newPriority: TaskPriority) => void;
   readOnly?: boolean;
   showLabel?: boolean;
+  dropUp?: boolean;
 }
 
 export const priorityConfig: Record<
@@ -52,6 +53,7 @@ export function PriorityBadge({
   onChange,
   readOnly = false,
   showLabel = false,
+  dropUp = false,
 }: PriorityBadgeProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -95,7 +97,7 @@ export function PriorityBadge({
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 mt-1 w-36 bg-white rounded-md shadow-dropdown border border-border py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+        <div className={`absolute left-0 w-36 bg-white rounded-md shadow-dropdown border border-border py-1 z-[9999] animate-in fade-in zoom-in-95 duration-100 ${dropUp ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
           <div className="px-2 py-1 text-[11px] font-semibold text-text-muted uppercase tracking-wider">
             Set Priority
           </div>

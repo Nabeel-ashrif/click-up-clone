@@ -143,7 +143,7 @@ export function QuickAddTaskModal() {
       onClick={() => setIsQuickAddOpen(false)}
     >
       <div
-        className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden text-slate-800"
+        className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 text-slate-800"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -293,23 +293,23 @@ export function QuickAddTaskModal() {
             <div className="flex flex-wrap items-center gap-2.5">
               <div className="flex items-center gap-1.5">
                 <span className="text-[11px] font-semibold text-slate-500">Status:</span>
-                <StatusBadge statusId={statusId} onChange={setStatusId} />
+                <StatusBadge statusId={statusId} onChange={setStatusId} dropUp />
               </div>
 
               <div className="flex items-center gap-1.5">
                 <span className="text-[11px] font-semibold text-slate-500">Priority:</span>
-                <PriorityBadge priority={priority} onChange={setPriority} showLabel />
+                <PriorityBadge priority={priority} onChange={setPriority} showLabel dropUp />
               </div>
 
               <div className="flex items-center gap-1.5">
                 <span className="text-[11px] font-semibold text-slate-500">Due:</span>
-                <DatePickerPopover date={dueDate} onChange={setDueDate} />
+                <DatePickerPopover date={dueDate} onChange={setDueDate} dropUp />
               </div>
             </div>
 
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] font-semibold text-slate-500">Assign:</span>
-              <AssigneePicker assigneeIds={assigneeIds} onChange={setAssigneeIds} />
+              <AssigneePicker assigneeIds={assigneeIds} onChange={setAssigneeIds} dropUp />
             </div>
           </div>
 

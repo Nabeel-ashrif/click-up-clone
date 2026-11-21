@@ -10,9 +10,10 @@ interface StatusBadgeProps {
   onChange?: (newStatusId: string) => void;
   readOnly?: boolean;
   size?: 'sm' | 'md';
+  dropUp?: boolean;
 }
 
-export function StatusBadge({ statusId, onChange, readOnly = false, size = 'sm' }: StatusBadgeProps) {
+export function StatusBadge({ statusId, onChange, readOnly = false, size = 'sm', dropUp = false }: StatusBadgeProps) {
   const { workspace, getStatusById } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -75,7 +76,7 @@ export function StatusBadge({ statusId, onChange, readOnly = false, size = 'sm' 
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 mt-1 w-44 bg-white rounded-md shadow-dropdown border border-border py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+        <div className={`absolute left-0 w-44 bg-white rounded-md shadow-dropdown border border-border py-1 z-[9999] animate-in fade-in zoom-in-95 duration-100 ${dropUp ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
           <div className="px-2.5 py-1 text-[10px] font-bold text-text-muted uppercase tracking-wider">
             Move Status
           </div>
