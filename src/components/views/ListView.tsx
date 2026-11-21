@@ -222,30 +222,58 @@ export function ListView({ listId }: { listId: string }) {
                             <div className="w-5" />
                           )}
 
-                          {/* Quick Completion Checkbox Button */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const targetStatusId = task.statusId === 'st-done' ? 'st-todo' : 'st-done';
-                              const targetStatus = statuses.find((s) => s.id === targetStatusId);
-                              if (targetStatus) {
-                                const check = canTransitionTaskStatus(task, targetStatus, currentUser);
-                                if (!check.allowed) {
-                                  showToast(check.reason || 'Permission denied: Stage transition not authorized.');
-                                  return;
+                          {/* Sequential Phase Advance Radio Button */}
+                          {(() => {
+                            const sortedStatuses = [...statuses].sort((a, b) => a.orderIndex - b.orderIndex);
+                            const currentIdx = sortedStatuses.findIndex((s) => s.id === task.statusId);
+                            const currentStatusObj = sortedStatuses[currentIdx] || sortedStatuses[0];
+                            const isLastStage = currentIdx === sortedStatuses.length - 1;
+                            const nextStageObj = isLastStage ? sortedStatuses[0] : sortedStatuses[currentIdx + 1];
+
+                            return (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!nextStageObj) return;
+                                  const check = canTransitionTaskStatus(task, nextStageObj, currentUser);
+                                  if (!check.allowed) {
+                                    showToast(check.reason || 'Permission denied: Stage transition not authorized.');
+                                    return;
+                                  }
+                                  updateTask(task.id, { statusId: nextStageObj.id });
+                                  showToast(
+                                    isLastStage
+                                      ? `Task reopened to ${nextStageObj.name}`
+                                      : `Advanced to phase: ${nextStageObj.name}`
+                                  );
+                                }}
+                                className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all group/btn ${
+                                  currentStatusObj?.type === 'done' || currentStatusObj?.type === 'closed'
+                                    ? 'bg-emerald-600 border-emerald-600 text-white shadow-2xs'
+                                    : currentStatusObj?.type === 'review'
+                                      ? 'border-amber-500 bg-amber-50/70 hover:bg-amber-100'
+                                      : currentStatusObj?.type === 'in_progress'
+                                        ? 'border-blue-600 bg-blue-50/70 hover:bg-blue-100'
+                                        : 'border-slate-300 hover:border-teal-700 hover:bg-teal-50/50'
+                                }`}
+                                title={
+                                  isLastStage
+                                    ? 'Completed! Click to reopen task'
+                                    : `Current: ${currentStatusObj?.name} ➔ Click to advance to ${nextStageObj?.name}`
                                 }
-                              }
-                              updateTask(task.id, { statusId: targetStatusId });
-                            }}
-                            className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${
-                              task.statusId === 'st-done'
-                                ? 'bg-emerald-600 border-emerald-600 text-white shadow-2xs'
-                                : 'border-slate-300 hover:border-accent hover:bg-accent/5'
-                            }`}
-                            title={task.statusId === 'st-done' ? 'Reopen task' : 'Mark complete'}
-                          >
-                            {task.statusId === 'st-done' && <Check className="w-3 h-3 stroke-[3]" />}
-                          </button>
+                              >
+                                {currentStatusObj?.type === 'done' || currentStatusObj?.type === 'closed' ? (
+                                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                ) : currentStatusObj?.type === 'review' ? (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                ) : currentStatusObj?.type === 'in_progress' ? (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                                ) : (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-transparent group-hover/btn:bg-teal-700/60 transition-colors" />
+                                )}
+                              </button>
+                            );
+                          })()}
 
                           {/* Task Title (Opens Inspector) */}
                           <button
