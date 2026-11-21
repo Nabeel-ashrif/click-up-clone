@@ -148,6 +148,51 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [currentUser, setCurrentUser] = useState<User>(mockUsers[0]);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Load persisted workspaces and tasks from localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const savedWs = localStorage.getItem('cu_workspaces_v2');
+      if (savedWs) {
+        const parsed = JSON.parse(savedWs);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setWorkspaces(parsed);
+        }
+      }
+      const savedTasks = localStorage.getItem('cu_tasks_v2');
+      if (savedTasks) {
+        const parsedTasks = JSON.parse(savedTasks);
+        if (Array.isArray(parsedTasks)) {
+          setTasks(parsedTasks);
+        }
+      }
+    } catch (e) {
+      console.error('Error loading data from localStorage', e);
+    }
+    setIsHydrated(true);
+  }, []);
+
+  // Persist workspaces to localStorage
+  useEffect(() => {
+    if (!isHydrated || typeof window === 'undefined') return;
+    try {
+      localStorage.setItem('cu_workspaces_v2', JSON.stringify(workspaces));
+    } catch (e) {
+      console.error('Error saving workspaces to localStorage', e);
+    }
+  }, [workspaces, isHydrated]);
+
+  // Persist tasks to localStorage
+  useEffect(() => {
+    if (!isHydrated || typeof window === 'undefined') return;
+    try {
+      localStorage.setItem('cu_tasks_v2', JSON.stringify(tasks));
+    } catch (e) {
+      console.error('Error saving tasks to localStorage', e);
+    }
+  }, [tasks, isHydrated]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

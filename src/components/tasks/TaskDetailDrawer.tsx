@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -66,17 +66,19 @@ export function TaskDetailDrawer() {
   const [titleDraft, setTitleDraft] = useState('');
   const [descriptionDraft, setDescriptionDraft] = useState('');
 
-  if (!selectedTaskId) return null;
-
-  const task = tasks.find((t) => t.id === selectedTaskId);
-  if (!task) return null;
+  const task = selectedTaskId ? tasks.find((t) => t.id === selectedTaskId) : null;
 
   useEffect(() => {
     if (task) {
       setTitleDraft(task.title);
       setDescriptionDraft(task.description);
+    } else {
+      setTitleDraft('');
+      setDescriptionDraft('');
     }
   }, [task?.id, task?.title, task?.description]);
+
+  if (!selectedTaskId || !task) return null;
 
   const handleSaveTask = () => {
     const cleanTitle = titleDraft.trim() || task.title;
