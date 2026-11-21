@@ -85,6 +85,7 @@ interface AppContextType {
   createList: (spaceId: string, name: string, folderId?: string) => List;
   updateSpaceVisibility: (spaceId: string, isPrivate: boolean, allowedMemberIds?: string[]) => void;
   toggleSpaceArchive: (spaceId: string) => void;
+  deleteSpace: (spaceId: string) => void;
   // Member actions
   inviteMember: (email: string, role: WorkspaceRole) => void;
   updateMemberRole: (memberId: string, role: WorkspaceRole) => void;
@@ -542,6 +543,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     showToast(nextState ? 'Space marked inactive (Archived)' : 'Space restored to active');
   };
 
+  const deleteSpace = (spaceId: string) => {
+    setWorkspace((prev) => {
+      const spaceToDelete = prev.spaces.find((sp) => sp.id === spaceId);
+      if (!spaceToDelete) return prev;
+      const listIds = [
+        ...spaceToDelete.lists.map((l) => l.id),
+        ...spaceToDelete.folders.flatMap((f) => f.lists.map((l) => l.id)),
+      ];
+      setTasks((prevTasks) => prevTasks.filter((t) => !listIds.includes(t.listId)));
+      return {
+        ...prev,
+        spaces: prev.spaces.filter((sp) => sp.id !== spaceId),
+      };
+    });
+    showToast('Space permanently deleted');
+  };
+
   const switchWorkspace = (workspaceId: string) => {
     const target = workspaces.find((w) => w.id === workspaceId || w.slug === workspaceId);
     if (!target) return;
@@ -798,6 +816,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         createList,
         updateSpaceVisibility,
         toggleSpaceArchive,
+        deleteSpace,
         inviteMember,
         updateMemberRole,
         removeMember,

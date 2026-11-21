@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Repeat,
   Bell,
+  Edit3,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { StatusBadge } from '../ui/StatusBadge';
@@ -292,9 +293,9 @@ export function ListView({ listId }: { listId: string }) {
                               type="button"
                               onClick={() => setSelectedTaskId(task.id)}
                               className="p-1 rounded text-slate-400 hover:text-accent hover:bg-slate-200/60"
-                              title="Inspect Task Details"
+                              title="Edit Task Details"
                             >
-                              <Maximize2 className="w-3.5 h-3.5" />
+                              <Edit3 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               type="button"

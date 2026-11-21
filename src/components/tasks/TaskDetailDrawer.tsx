@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Trash2,
@@ -25,6 +25,8 @@ import {
   List,
   Repeat,
   Bell,
+  Edit3,
+  Save,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { StatusBadge } from '../ui/StatusBadge';
@@ -58,11 +60,34 @@ export function TaskDetailDrawer() {
   const [newTagInput, setNewTagInput] = useState('');
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState('');
+  const [descriptionDraft, setDescriptionDraft] = useState('');
 
   if (!selectedTaskId) return null;
 
   const task = tasks.find((t) => t.id === selectedTaskId);
   if (!task) return null;
+
+  useEffect(() => {
+    if (task) {
+      setTitleDraft(task.title);
+      setDescriptionDraft(task.description);
+    }
+  }, [task?.id, task?.title, task?.description]);
+
+  const handleSaveTask = () => {
+    const cleanTitle = titleDraft.trim() || task.title;
+    updateTask(task.id, {
+      title: cleanTitle,
+      description: descriptionDraft,
+    });
+    setIsSaved(true);
+    showToast('Task saved successfully');
+    setTimeout(() => setIsSaved(false), 2000);
+  };
 
   const list = getListById(task.listId);
   const space = list ? getSpaceById(list.spaceId) : null;
@@ -168,6 +193,46 @@ export function TaskDetailDrawer() {
 
           {/* Action Icon Buttons */}
           <div className="flex items-center gap-1.5">
+            {/* Edit Button */}
+            <button
+              type="button"
+              onClick={() => setIsEditingTitle(!isEditingTitle)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                isEditingTitle
+                  ? 'bg-teal-50 border-teal-300 text-teal-800'
+                  : 'border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+              title="Toggle Edit Mode"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{isEditingTitle ? 'Editing' : 'Edit'}</span>
+            </button>
+
+            {/* Save Button */}
+            <button
+              type="button"
+              onClick={handleSaveTask}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all shadow-xs ${
+                isSaved ? 'bg-emerald-600' : 'bg-teal-800 hover:bg-teal-900 active:scale-95'
+              }`}
+              title="Save Task Changes"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>{isSaved ? 'Saved!' : 'Save'}</span>
+            </button>
+
+            {/* Delete Button */}
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 hover:border-rose-600 transition-colors"
+              title="Delete Task"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Delete</span>
+            </button>
+
+            {/* Copy Link Button */}
             <button
               type="button"
               onClick={copyTaskLink}
@@ -177,15 +242,7 @@ export function TaskDetailDrawer() {
               {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
             </button>
 
-            <button
-              type="button"
-              onClick={() => deleteTask(task.id)}
-              className="p-2 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
-              title="Delete Task"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-
+            {/* Close Button */}
             <button
               type="button"
               onClick={() => setSelectedTaskId(null)}
@@ -202,12 +259,13 @@ export function TaskDetailDrawer() {
           {/* Left Column: Title, Description, Subtasks, Checklists, Comments */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {/* Task Title Input */}
-            <div>
+            <div className="relative group">
               <input
                 type="text"
-                value={task.title}
-                onChange={(e) => updateTask(task.id, { title: e.target.value })}
-                className="w-full text-xl font-bold text-slate-900 border border-transparent hover:border-slate-200 focus:border-accent focus:bg-slate-50/50 rounded-lg px-3 py-1.5 outline-none transition-all"
+                value={titleDraft}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                onBlur={handleSaveTask}
+                className="w-full text-xl font-bold text-slate-900 border border-transparent hover:border-slate-300 focus:border-teal-700 focus:bg-white rounded-lg px-3 py-1.5 outline-none transition-all"
                 placeholder="Task title..."
               />
             </div>
@@ -225,8 +283,9 @@ export function TaskDetailDrawer() {
                 </div>
               </div>
               <textarea
-                value={task.description}
-                onChange={(e) => updateTask(task.id, { description: e.target.value })}
+                value={descriptionDraft}
+                onChange={(e) => setDescriptionDraft(e.target.value)}
+                onBlur={handleSaveTask}
                 placeholder="Add specifications, acceptance criteria, or technical details..."
                 rows={6}
                 className="w-full p-3.5 text-xs leading-relaxed border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent bg-slate-50/40 text-slate-800 font-sans resize-y transition-all"
@@ -624,6 +683,87 @@ export function TaskDetailDrawer() {
             </div>
           </div>
         </div>
+
+        {/* Sticky Drawer Footer with Explicit Save, Delete, Close Actions */}
+        <div className="h-16 px-6 border-t border-slate-200/90 bg-slate-50/80 flex items-center justify-between flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 hover:border-rose-600 transition-colors shadow-2xs"
+            title="Delete this task permanently"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Delete Task</span>
+          </button>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setSelectedTaskId(null)}
+              className="px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200/60 rounded-lg transition-colors border border-slate-200"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveTask}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white transition-all shadow-xs ${
+                isSaved
+                  ? 'bg-emerald-600'
+                  : 'bg-teal-800 hover:bg-teal-900 active:scale-95 hover:shadow-md'
+              }`}
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>{isSaved ? 'Saved ✓' : 'Save Changes'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Task Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-slate-200 text-slate-800 animate-in zoom-in-95 duration-150">
+              <div className="flex items-center gap-2.5 text-rose-600 mb-3">
+                <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center flex-shrink-0">
+                  <Trash2 className="w-5 h-5 text-rose-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">Delete Task</h3>
+                  <span className="text-[10px] text-slate-400 font-mono font-medium">{task.id}</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600 mb-2 leading-relaxed">
+                Are you sure you want to delete <strong>&quot;{task.title}&quot;</strong>?
+              </p>
+
+              <div className="text-[11px] text-rose-700 bg-rose-50 border border-rose-200 p-2.5 rounded-xl mb-5 leading-normal">
+                This will permanently delete this task along with all associated subtasks and checklist items.
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold hover:bg-slate-50 text-slate-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    deleteTask(task.id);
+                    setShowDeleteConfirm(false);
+                    setSelectedTaskId(null);
+                  }}
+                  className="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs transition-colors"
+                >
+                  Confirm Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

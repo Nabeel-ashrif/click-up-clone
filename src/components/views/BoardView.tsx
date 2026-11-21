@@ -11,6 +11,8 @@ import {
   GripVertical,
   Repeat,
   Bell,
+  Trash2,
+  Edit3,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { PriorityBadge } from '../ui/PriorityBadge';
@@ -26,6 +28,7 @@ export function BoardView({ listId }: { listId: string }) {
     getListById,
     getSpaceById,
     updateTask,
+    deleteTask,
     addTask,
     setSelectedTaskId,
     searchFilter,
@@ -205,9 +208,35 @@ export function BoardView({ listId }: { listId: string }) {
                       </div>
                     )}
 
-                    {/* Task Title */}
-                    <div className="font-semibold text-xs text-slate-900 leading-snug mb-3 group-hover:text-accent transition-colors">
-                      {task.title}
+                    {/* Task Title with Quick Action Buttons */}
+                    <div className="flex items-start justify-between gap-1.5 mb-3">
+                      <div className="font-semibold text-xs text-slate-900 leading-snug group-hover:text-accent transition-colors flex-1">
+                        {task.title}
+                      </div>
+                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedTaskId(task.id);
+                          }}
+                          className="p-1 rounded text-slate-400 hover:text-accent hover:bg-slate-100 transition-colors"
+                          title="Edit Task"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteTask(task.id);
+                          }}
+                          className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                          title="Delete Task"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Mini Checklist Progress Bar */}

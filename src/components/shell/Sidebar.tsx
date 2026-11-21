@@ -39,6 +39,7 @@ import {
   Palette,
   Sun,
   Moon,
+  Trash2,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Avatar } from '../ui/Avatar';
@@ -59,6 +60,7 @@ export function Sidebar() {
     createList,
     updateSpaceVisibility,
     toggleSpaceArchive,
+    deleteSpace,
     currentUser,
     users,
     tasks,
@@ -97,6 +99,7 @@ export function Sidebar() {
 
   // Space Visibility & Rename Settings Modal state
   const [visibilityModalSpace, setVisibilityModalSpace] = useState<any | null>(null);
+  const [spaceToDelete, setSpaceToDelete] = useState<any | null>(null);
   const [tempSpaceName, setTempSpaceName] = useState<string>('');
   const [tempSpaceColor, setTempSpaceColor] = useState<string>('#7b68ee');
   const [tempIsPrivate, setTempIsPrivate] = useState<boolean>(false);
@@ -695,7 +698,7 @@ export function Sidebar() {
                   </button>
 
                   <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
-                    {/* Control Visibility / Permissions Modal */}
+                    {/* Edit Space Button */}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -707,9 +710,9 @@ export function Sidebar() {
                           ? 'hover:bg-[#2e3136] text-slate-400 hover:text-teal-300'
                           : 'hover:bg-[#dedad0] text-slate-500 hover:text-teal-800'
                       }`}
-                      title="Control Group Visibility & Permissions"
+                      title="Edit Space & Settings"
                     >
-                      <Shield className="w-3 h-3" />
+                      <Edit3 className="w-3 h-3" />
                     </button>
 
                     <button
@@ -977,15 +980,37 @@ export function Sidebar() {
                         />
                         <span className="truncate opacity-75 text-[11px]">{space.name}</span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => toggleSpaceArchive(space.id)}
-                        className="px-2 py-0.5 rounded hover:bg-teal-50 text-teal-700 hover:text-teal-800 flex items-center gap-1 text-[10px] font-bold transition-colors"
-                        title="Restore space to active"
-                      >
-                        <RotateCcw className="w-3 h-3" />
-                        <span>Restore</span>
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => openVisibilityModal(space)}
+                          className="px-2 py-0.5 rounded hover:bg-slate-200/60 text-slate-600 hover:text-slate-900 flex items-center gap-1 text-[10px] font-bold transition-colors"
+                          title="Edit Inactive Space Settings"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => toggleSpaceArchive(space.id)}
+                          className="px-2 py-0.5 rounded hover:bg-teal-50 text-teal-700 hover:text-teal-800 flex items-center gap-1 text-[10px] font-bold transition-colors"
+                          title="Restore space to active"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          <span>Restore</span>
+                        </button>
+                        {currentUser.role === 'owner' && (
+                          <button
+                            type="button"
+                            onClick={() => setSpaceToDelete(space)}
+                            className="px-2 py-0.5 rounded hover:bg-rose-50 text-rose-600 hover:text-rose-700 flex items-center gap-1 text-[10px] font-bold transition-colors"
+                            title="Permanently Delete Inactive Space (Owner Only)"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Delete</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1214,7 +1239,7 @@ export function Sidebar() {
                   style={{ backgroundColor: visibilityModalSpace.color || '#0f766e' }}
                 />
                 <h3 className="font-bold text-sm text-slate-900">
-                  Access & Visibility: {visibilityModalSpace.name}
+                  Edit Space: {visibilityModalSpace.name}
                 </h3>
               </div>
               <button
@@ -1374,20 +1399,38 @@ export function Sidebar() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 mt-6 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setVisibilityModalSpace(null)}
-                className="px-3 py-1.5 rounded-xl text-xs border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-1.5 rounded-xl text-xs bg-teal-800 hover:bg-teal-900 text-white font-bold shadow-xs transition-colors"
-              >
-                Save Permissions
-              </button>
+            <div className="flex items-center justify-between gap-2 mt-6 pt-3 border-t border-slate-100">
+              {visibilityModalSpace.isArchived && currentUser.role === 'owner' ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const sp = visibilityModalSpace;
+                    setVisibilityModalSpace(null);
+                    setSpaceToDelete(sp);
+                  }}
+                  className="px-3 py-1.5 rounded-xl text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold border border-rose-200 transition-colors flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete Space</span>
+                </button>
+              ) : (
+                <div />
+              )}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setVisibilityModalSpace(null)}
+                  className="px-3 py-1.5 rounded-xl text-xs border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded-xl text-xs bg-teal-800 hover:bg-teal-900 text-white font-bold shadow-xs transition-colors"
+                >
+                  Save Changes
+                </button>
+              </div>
             </div>
           </form>
         </div>
@@ -1569,6 +1612,54 @@ export function Sidebar() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Permanent Space Deletion Confirmation Modal (Owner Only) */}
+      {spaceToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 p-6 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-2.5 text-rose-600 mb-3">
+              <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center flex-shrink-0">
+                <Trash2 className="w-5 h-5 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-slate-900">Delete Inactive Space</h3>
+                <span className="text-[10px] text-slate-400 font-medium">Workspace Owner Action</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+              Are you sure you want to permanently delete <strong>&quot;{spaceToDelete.name}&quot;</strong>?
+            </p>
+
+            <div className="text-[11px] text-rose-700 bg-rose-50 border border-rose-200 p-2.5 rounded-xl mb-5 leading-normal">
+              <strong>Warning:</strong> This space, its lists, and all associated tasks will be permanently removed from this workspace.
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setSpaceToDelete(null)}
+                className="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteSpace(spaceToDelete.id);
+                  setSpaceToDelete(null);
+                  if (visibilityModalSpace?.id === spaceToDelete.id) {
+                    setVisibilityModalSpace(null);
+                  }
+                }}
+                className="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs transition-colors"
+              >
+                Permanently Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
