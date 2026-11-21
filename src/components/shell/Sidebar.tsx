@@ -41,6 +41,8 @@ import {
   Moon,
   Trash2,
   KeyRound,
+  LayoutDashboard,
+  BarChart3,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Avatar } from '../ui/Avatar';
@@ -435,15 +437,6 @@ export function Sidebar() {
       >
         <button
           type="button"
-          onClick={() => setIsQuickAddOpen(true)}
-          className="p-2 rounded-lg bg-teal-800 text-white hover:bg-teal-900 shadow-xs transition-all hover:scale-105"
-          title="Create New Task (Ctrl+T)"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
-
-        <button
-          type="button"
           onClick={() => setIsCommandPaletteOpen(true)}
           className={`p-2 rounded-lg transition-colors ${
             isDark
@@ -559,6 +552,60 @@ export function Sidebar() {
             }`}
           />
           {!isCollapsed && <span>Home / My Work</span>}
+        </Link>
+
+        <Link
+          href={`/w/${workspace.slug}/dashboard`}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs transition-all ${
+            pathname?.includes('/dashboard')
+              ? isDark
+                ? 'bg-accent/20 text-accent font-semibold border border-accent/30'
+                : 'bg-[#dedad0] text-slate-950 font-bold shadow-2xs'
+              : isDark
+                ? 'text-slate-300 hover:bg-[#222428] hover:text-white'
+                : 'text-slate-700 hover:bg-[#eeebe3] hover:text-slate-950 font-medium'
+          }`}
+          title="Executive Dashboard & Overview"
+        >
+          <LayoutDashboard
+            className={`w-4 h-4 flex-shrink-0 ${
+              pathname?.includes('/dashboard')
+                ? isDark
+                  ? 'text-accent'
+                  : 'text-teal-800'
+                : isDark
+                  ? 'text-slate-400'
+                  : 'text-slate-500'
+            }`}
+          />
+          {!isCollapsed && <span>Executive Dashboard</span>}
+        </Link>
+
+        <Link
+          href={`/w/${workspace.slug}/reports`}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs transition-all ${
+            pathname?.includes('/reports')
+              ? isDark
+                ? 'bg-accent/20 text-accent font-semibold border border-accent/30'
+                : 'bg-[#dedad0] text-slate-950 font-bold shadow-2xs'
+              : isDark
+                ? 'text-slate-300 hover:bg-[#222428] hover:text-white'
+                : 'text-slate-700 hover:bg-[#eeebe3] hover:text-slate-950 font-medium'
+          }`}
+          title="Reports & Performance Analytics"
+        >
+          <BarChart3
+            className={`w-4 h-4 flex-shrink-0 ${
+              pathname?.includes('/reports')
+                ? isDark
+                  ? 'text-accent'
+                  : 'text-teal-800'
+                : isDark
+                  ? 'text-slate-400'
+                  : 'text-slate-500'
+            }`}
+          />
+          {!isCollapsed && <span>Reports & Analytics</span>}
         </Link>
 
         <Link

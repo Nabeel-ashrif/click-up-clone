@@ -87,14 +87,13 @@ export default function HomeMyWorkPage() {
               Completed
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsQuickAddOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-3 bg-accent hover:bg-accent-hover text-white rounded-xl text-xs font-bold shadow-sm transition-all hover:scale-105 active:scale-95"
+          <Link
+            href={`/w/${workspace.slug}/dashboard`}
+            className="flex items-center gap-1.5 px-4 py-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-sm transition-all hover:scale-102 active:scale-98"
           >
-            <Plus className="w-4 h-4" />
-            <span>Create Task</span>
-          </button>
+            <TrendingUp className="w-4 h-4" />
+            <span>Executive Dashboard</span>
+          </Link>
         </div>
       </div>
 

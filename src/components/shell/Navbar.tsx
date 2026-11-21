@@ -315,10 +315,11 @@ export function Navbar() {
         <button
           type="button"
           onClick={() => setIsQuickAddOpen(true)}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-accent to-purple-600 hover:from-accent-hover hover:to-purple-700 text-white font-semibold text-xs rounded-lg shadow-sm hover:shadow-md transition-all active:scale-95"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-teal-800 hover:bg-teal-900 text-white font-semibold text-xs rounded-lg shadow-sm hover:shadow-md transition-all active:scale-95"
+          title="Create New Task (Ctrl+T)"
         >
           <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Add Task</span>
+          <span className="hidden sm:inline">New Task</span>
         </button>
       </div>
     </header>
