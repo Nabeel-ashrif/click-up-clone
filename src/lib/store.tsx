@@ -150,7 +150,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User>(mockUsers[0]);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Load persisted workspaces and tasks from localStorage
+  // Load persisted workspaces and tasks from localStorage, then sync from Supabase
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -171,6 +171,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error('Error loading data from localStorage', e);
     }
+
+    // Pull shared tasks from Supabase for cross-user/device sync
+    async function syncSharedTasks() {
+      try {
+        const res = await fetch('/api/tasks');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.tasks) && data.tasks.length > 0) {
+            // Merge: Supabase has authoritative cross-user tasks
+            // Use Supabase version if it has more tasks than localStorage
+            setTasks((localTasks) => {
+              if (data.tasks.length >= localTasks.length) {
+                // Supabase is more complete — use it, then save to localStorage
+                try {
+                  localStorage.setItem('cu_tasks_v5', JSON.stringify(data.tasks));
+                } catch {}
+                return data.tasks;
+              }
+              return localTasks;
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to sync shared tasks:', err);
+      }
+    }
+    syncSharedTasks();
+
     setIsHydrated(true);
   }, []);
 
@@ -213,7 +241,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [workspaces, isHydrated]);
 
-  // Persist tasks to localStorage
+  // Persist tasks to localStorage AND sync to Supabase for cross-user sharing
   useEffect(() => {
     if (!isHydrated || typeof window === 'undefined') return;
     try {
@@ -221,6 +249,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error('Error saving tasks to localStorage', e);
     }
+    // Push to Supabase for cross-user/cross-device sync (fire-and-forget)
+    fetch('/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tasks }),
+    }).catch(() => {
+      // Silent fail — localStorage is still the primary store
+    });
   }, [tasks, isHydrated]);
 
   useEffect(() => {
@@ -359,17 +395,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     showToast(`Task "${data.title}" created successfully`);
 
-    // In-app notification
-    const newNotif: NotificationItem = {
-      id: `notif-${Date.now()}`,
-      userId: currentUser.id,
-      title: 'Task created',
-      message: `You created "${data.title}"`,
+    // In-app notifications for ALL assignees (not just creator)
+    const finalAssigneeIds = data.assigneeIds || [currentUser.id];
+    const notifTime = Date.now();
+    const newNotifs: NotificationItem[] = finalAssigneeIds.map((assigneeId, idx) => ({
+      id: `notif-${notifTime}-${idx}`,
+      userId: assigneeId,
+      title: assigneeId === currentUser.id ? 'Task created' : 'Task assigned to you',
+      message:
+        assigneeId === currentUser.id
+          ? `You created "${data.title}"`
+          : `${currentUser.fullName} assigned you: "${data.title}"`,
       taskId: newTask.id,
       isRead: false,
       createdAt: new Date().toISOString(),
-    };
-    setNotifications((prev) => [newNotif, ...prev]);
+    }));
+    setNotifications((prev) => [...newNotifs, ...prev]);
 
     return newTask;
   };

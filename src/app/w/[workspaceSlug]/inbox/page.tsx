@@ -11,11 +11,16 @@ export default function InboxPage() {
     markNotificationRead,
     markAllNotificationsRead,
     setSelectedTaskId,
+    currentUser,
   } = useApp();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
-  const filtered = filter === 'unread' ? notifications.filter((n) => !n.isRead) : notifications;
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  // Show only notifications for the current user
+  const myNotifications = notifications.filter(
+    (n) => !n.userId || n.userId === currentUser.id
+  );
+  const filtered = filter === 'unread' ? myNotifications.filter((n) => !n.isRead) : myNotifications;
+  const unreadCount = myNotifications.filter((n) => !n.isRead).length;
 
   return (
     <div className="flex-1 overflow-y-auto p-6 max-w-4xl mx-auto w-full space-y-6">
@@ -54,7 +59,7 @@ export default function InboxPage() {
               : 'text-text-muted hover:text-text'
           }`}
         >
-          All Notifications ({notifications.length})
+          All Notifications ({myNotifications.length})
         </button>
         <button
           type="button"

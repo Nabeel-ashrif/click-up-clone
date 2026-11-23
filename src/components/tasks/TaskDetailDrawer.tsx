@@ -82,7 +82,7 @@ export function TaskDetailDrawer() {
 
   if (!selectedTaskId || !task) return null;
 
-  const handleSaveTask = () => {
+  const handleSaveTask = (andClose = false) => {
     const cleanTitle = titleDraft.trim() || task.title;
     updateTask(task.id, {
       title: cleanTitle,
@@ -90,7 +90,14 @@ export function TaskDetailDrawer() {
     });
     setIsSaved(true);
     showToast('Task saved successfully');
-    setTimeout(() => setIsSaved(false), 2000);
+    if (andClose) {
+      // Close the drawer immediately after save
+      setTimeout(() => {
+        setSelectedTaskId(null);
+      }, 350);
+    } else {
+      setTimeout(() => setIsSaved(false), 2000);
+    }
   };
 
   const list = getListById(task.listId);
@@ -215,14 +222,14 @@ export function TaskDetailDrawer() {
             {/* Save Button */}
             <button
               type="button"
-              onClick={handleSaveTask}
+              onClick={() => handleSaveTask(true)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all shadow-xs ${
                 isSaved ? 'bg-emerald-600' : 'bg-teal-800 hover:bg-teal-900 active:scale-95'
               }`}
-              title="Save Task Changes"
+              title="Save Task Changes &amp; Close"
             >
               <Check className="w-3.5 h-3.5" />
-              <span>{isSaved ? 'Saved!' : 'Save'}</span>
+              <span>{isSaved ? 'Saved ✓' : 'Save & Close'}</span>
             </button>
 
             {/* Delete Button */}
@@ -268,7 +275,7 @@ export function TaskDetailDrawer() {
                 type="text"
                 value={titleDraft}
                 onChange={(e) => setTitleDraft(e.target.value)}
-                onBlur={handleSaveTask}
+                onBlur={() => handleSaveTask(false)}
                 className="w-full text-xl font-bold text-slate-900 border border-transparent hover:border-slate-300 focus:border-teal-700 focus:bg-white rounded-lg px-3 py-1.5 outline-none transition-all"
                 placeholder="Task title..."
               />
@@ -295,7 +302,7 @@ export function TaskDetailDrawer() {
               <textarea
                 value={descriptionDraft}
                 onChange={(e) => setDescriptionDraft(e.target.value)}
-                onBlur={handleSaveTask}
+                onBlur={() => handleSaveTask(false)}
                 placeholder="Add specifications, acceptance criteria, or technical details..."
                 rows={6}
                 className="w-full p-3.5 text-xs leading-relaxed border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent bg-slate-50/40 text-slate-800 font-sans resize-y transition-all"
@@ -717,7 +724,7 @@ export function TaskDetailDrawer() {
             </button>
             <button
               type="button"
-              onClick={handleSaveTask}
+              onClick={() => handleSaveTask(true)}
               className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white transition-all shadow-xs ${
                 isSaved
                   ? 'bg-emerald-600'
@@ -725,7 +732,7 @@ export function TaskDetailDrawer() {
               }`}
             >
               <Check className="w-3.5 h-3.5" />
-              <span>{isSaved ? 'Saved ✓' : 'Save Changes'}</span>
+              <span>{isSaved ? 'Saved ✓' : 'Save & Close'}</span>
             </button>
           </div>
         </div>

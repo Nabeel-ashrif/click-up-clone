@@ -29,7 +29,6 @@ export function QuickAddTaskModal() {
     tasks,
     currentUser,
     addTask,
-    setSelectedTaskId,
   } = useApp();
 
   // 1. Filter ONLY assigned/permitted spaces that are active (not archived)
@@ -128,13 +127,14 @@ export function QuickAddTaskModal() {
       reminderMinutesBefore: reminderMinutesBefore >= 0 ? reminderMinutesBefore : undefined,
     });
 
-    // Reset and close
+    // Reset and close — do NOT auto-open the detail drawer
     setTitle('');
     setDescription('');
     setRecurrence('none');
     setReminderMinutesBefore(-1);
     setIsQuickAddOpen(false);
-    setSelectedTaskId(newTask.id);
+    // Task is accessible via the list; user can click it to inspect
+    void newTask;
   };
 
   return (

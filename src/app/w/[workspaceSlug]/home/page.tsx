@@ -32,8 +32,13 @@ export default function HomeMyWorkPage() {
 
   const [activeTab, setActiveTab] = useState<'assigned' | 'due' | 'completed'>('assigned');
 
-  // Tasks assigned to current user
-  const myTasks = tasks.filter((t) => t.assigneeIds.includes(currentUser.id));
+  // Tasks assigned to current user — match by id, username, or email for cross-device compatibility
+  const myTasks = tasks.filter((t) => {
+    if (t.assigneeIds.includes(currentUser.id)) return true;
+    if (currentUser.username && t.assigneeIds.includes(currentUser.username)) return true;
+    if (currentUser.email && t.assigneeIds.includes(currentUser.email)) return true;
+    return false;
+  });
   const activeTasks = myTasks.filter((t) => t.statusId !== 'st-done');
   const completedTasks = myTasks.filter((t) => t.statusId === 'st-done');
 

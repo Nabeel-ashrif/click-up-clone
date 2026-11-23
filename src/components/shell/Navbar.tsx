@@ -57,7 +57,7 @@ export function Navbar() {
   const currentList = currentListId ? getListById(currentListId) : null;
   const currentSpace = currentList ? getSpaceById(currentList.spaceId) : null;
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.isRead && (!n.userId || n.userId === currentUser.id)).length;
   const hasActiveFilters = selectedPriorityFilter !== 'all' || selectedStatusFilter !== 'all' || searchFilter.trim() !== '';
 
   const views = [
