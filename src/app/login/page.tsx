@@ -52,7 +52,7 @@ export default function LoginPage() {
 
       setCurrentUser(data.user);
       showToast(`Welcome back, ${data.user.fullName}!`);
-      router.push('/w/acme-eng/home');
+      router.push('/w/deutsche/home');
     } catch (err: any) {
       setErrorMsg(err.message || 'Connection error');
       setIsLoading(false);
@@ -81,7 +81,7 @@ export default function LoginPage() {
 
       setCurrentUser(data.user);
       showToast(`Account created for ${data.user.fullName}!`);
-      router.push('/w/acme-eng/home');
+      router.push('/w/deutsche/home');
     } catch (err: any) {
       setErrorMsg(err.message || 'Registration error');
       setIsLoading(false);

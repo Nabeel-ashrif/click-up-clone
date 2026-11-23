@@ -149,8 +149,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [currentUser, setCurrentUser] = useState<User>(mockUsers[0]);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isServerSynced, setIsServerSynced] = useState(false);
 
-  // Load persisted workspaces and tasks from localStorage, then sync from Supabase
+  // Load persisted workspaces and tasks from localStorage, then sync authoritative state from Supabase
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -158,13 +159,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (savedWs) {
         const parsed = JSON.parse(savedWs);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setWorkspaces(parsed);
+          // Migrate any legacy 'Acme Engineering' to 'DEUTSCHE'
+          const cleaned = parsed.map((w: Workspace) => {
+            if (w.name === 'Acme Engineering' || w.slug === 'acme-eng') {
+              return { ...w, name: 'DEUTSCHE', slug: 'deutsche' };
+            }
+            return w;
+          });
+          setWorkspaces(cleaned);
         }
       }
       const savedTasks = localStorage.getItem('cu_tasks_v5');
       if (savedTasks) {
         const parsedTasks = JSON.parse(savedTasks);
-        if (Array.isArray(parsedTasks)) {
+        if (Array.isArray(parsedTasks) && parsedTasks.length > 0) {
           setTasks(parsedTasks);
         }
       }
@@ -172,32 +180,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       console.error('Error loading data from localStorage', e);
     }
 
-    // Pull shared tasks from Supabase for cross-user/device sync
-    async function syncSharedTasks() {
+    // Pull authoritative shared workspaces and tasks from Supabase
+    async function syncSharedState() {
       try {
-        const res = await fetch('/api/tasks');
+        const res = await fetch('/api/sync');
         if (res.ok) {
           const data = await res.json();
-          if (data.success && Array.isArray(data.tasks) && data.tasks.length > 0) {
-            // Merge: Supabase has authoritative cross-user tasks
-            // Use Supabase version if it has more tasks than localStorage
-            setTasks((localTasks) => {
-              if (data.tasks.length >= localTasks.length) {
-                // Supabase is more complete — use it, then save to localStorage
-                try {
-                  localStorage.setItem('cu_tasks_v5', JSON.stringify(data.tasks));
-                } catch {}
-                return data.tasks;
-              }
-              return localTasks;
-            });
+          if (data.success) {
+            if (Array.isArray(data.workspaces) && data.workspaces.length > 0) {
+              setWorkspaces(data.workspaces);
+              try {
+                localStorage.setItem('cu_workspaces_v5', JSON.stringify(data.workspaces));
+              } catch {}
+            }
+            if (Array.isArray(data.tasks) && data.tasks.length > 0) {
+              setTasks(data.tasks);
+              try {
+                localStorage.setItem('cu_tasks_v5', JSON.stringify(data.tasks));
+              } catch {}
+            }
           }
         }
       } catch (err) {
-        console.error('Failed to sync shared tasks:', err);
+        console.error('Failed to sync shared state from Supabase:', err);
+      } finally {
+        setIsServerSynced(true);
       }
     }
-    syncSharedTasks();
+    syncSharedState();
 
     setIsHydrated(true);
   }, []);
@@ -231,33 +241,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     syncAuthAndMembers();
   }, []);
 
-  // Persist workspaces to localStorage
+  // Persist workspaces to localStorage AND sync to Supabase for cross-user sharing
   useEffect(() => {
-    if (!isHydrated || typeof window === 'undefined') return;
+    if (!isHydrated || !isServerSynced || typeof window === 'undefined') return;
     try {
       localStorage.setItem('cu_workspaces_v5', JSON.stringify(workspaces));
     } catch (e) {
       console.error('Error saving workspaces to localStorage', e);
     }
-  }, [workspaces, isHydrated]);
+    // Push workspaces to Supabase (only after initial server sync has completed)
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ workspaces }),
+    }).catch(() => {});
+  }, [workspaces, isHydrated, isServerSynced]);
 
   // Persist tasks to localStorage AND sync to Supabase for cross-user sharing
   useEffect(() => {
-    if (!isHydrated || typeof window === 'undefined') return;
+    if (!isHydrated || !isServerSynced || typeof window === 'undefined') return;
     try {
       localStorage.setItem('cu_tasks_v5', JSON.stringify(tasks));
     } catch (e) {
       console.error('Error saving tasks to localStorage', e);
     }
-    // Push to Supabase for cross-user/cross-device sync (fire-and-forget)
-    fetch('/api/tasks', {
+    // Push tasks to Supabase (only after initial server sync has completed)
+    fetch('/api/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tasks }),
-    }).catch(() => {
-      // Silent fail — localStorage is still the primary store
-    });
-  }, [tasks, isHydrated]);
+    }).catch(() => {});
+  }, [tasks, isHydrated, isServerSynced]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

@@ -15,7 +15,7 @@ export default function RootPage() {
         const data = await res.json();
         if (data.authenticated && data.user) {
           setCurrentUser(data.user);
-          router.replace('/w/acme-eng/home');
+          router.replace('/w/deutsche/home');
         } else {
           router.replace('/login');
         }
