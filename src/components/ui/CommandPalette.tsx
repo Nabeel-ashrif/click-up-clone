@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, CheckSquare, Folder, FileText, UserPlus, X, ArrowRight } from 'lucide-react';
 import { useApp } from '@/lib/store';
+import { canUserViewTask } from '@/lib/permissions';
 import { useRouter } from 'next/navigation';
 
 export function CommandPalette() {
@@ -12,6 +13,7 @@ export function CommandPalette() {
     tasks,
     workspace,
     docs,
+    currentUser,
     setSelectedTaskId,
     setIsQuickAddOpen,
   } = useApp();
@@ -30,8 +32,8 @@ export function CommandPalette() {
 
   if (!isCommandPaletteOpen) return null;
 
-  const filteredTasks = tasks.filter((t) =>
-    t.title.toLowerCase().includes(query.toLowerCase())
+  const filteredTasks = tasks.filter(
+    (t) => canUserViewTask(t, currentUser) && t.title.toLowerCase().includes(query.toLowerCase())
   ).slice(0, 5);
 
   const allLists = workspace.spaces.flatMap((s) => [

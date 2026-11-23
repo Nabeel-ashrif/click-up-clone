@@ -7,17 +7,44 @@ export interface TransitionCheck {
 }
 
 /**
+ * Determines whether a user is authorized to view a task.
+ *
+ * Rules:
+ * 1. Space Owner (role === 'owner'): Can see ALL tasks across all spaces and lists.
+ * 2. All other accounts (admin, member, viewer):
+ *    Can ONLY see tasks that:
+ *    a) They created/assigned themselves (task.creatorId === user.id or username)
+ *    b) Are assigned to them by others (task.assigneeIds includes user.id, username, or email)
+ */
+export function canUserViewTask(task: Task, user: User): boolean {
+  if (!task || !user) return false;
+  if (user.role === 'owner') {
+    return true;
+  }
+
+  const isCreator =
+    task.creatorId === user.id ||
+    Boolean(user.username && task.creatorId === user.username) ||
+    Boolean(user.email && task.creatorId === user.email);
+
+  const isAssignee =
+    task.assigneeIds.includes(user.id) ||
+    Boolean(user.username && task.assigneeIds.includes(user.username)) ||
+    Boolean(user.email && task.assigneeIds.includes(user.email));
+
+  return Boolean(isCreator || isAssignee);
+}
+
+/**
  * Validates whether the current user is authorized to transition a task to targetStatus.
  *
  * Rules:
  * 1. Viewers: Read-only, cannot transition any status.
- * 2. Workspace Owners & Admins: Full administrative authority across all stages.
- * 3. Moving to 'in_progress': Allowed for assigned members, task creator, or admins/owners.
- * 4. Moving to 'review': Allowed for assigned members (submitting work for review), creator, or admins/owners.
- * 5. Moving to 'done' / 'closed' (Complete):
- *    - Restricted to Workspace Owner, Workspace Admin, or Task Creator reviewing another's work.
- *    - Assignees cannot self-approve and mark completed without authorization.
- * 6. Moving back to 'open' (To Do): Allowed for assignees, creator, or admins/owners.
+ * 2. Moving to 'done' / 'closed' (Complete):
+ *    - ONLY SPACE OWNER OR ADMIN has the right to mark a task as complete.
+ * 3. Moving to 'review': Allowed for assigned members or admins/owners.
+ * 4. Moving to 'in_progress': Allowed for assigned members or admins/owners.
+ * 5. Moving back to 'open' (To Do): Allowed for assignees or admins/owners.
  */
 export function canTransitionTaskStatus(
   task: Task | undefined,
@@ -44,26 +71,25 @@ export function canTransitionTaskStatus(
     };
   }
 
-  // 2. Owner & Admin have universal approval/transition authority
+  // 2. Stage: COMPLETE / DONE / CLOSED — STRICT: ONLY SPACE OWNER OR ADMIN
+  if (targetStatus.type === 'done' || targetStatus.type === 'closed' || targetStatus.id === 'st-done') {
+    if (role === 'owner' || role === 'admin') {
+      return { allowed: true };
+    }
+    return {
+      allowed: false,
+      reason: 'Permission Denied: ONLY Space Owner or Admin has the right to mark a task as complete.',
+      requiredRole: 'Owner or Admin',
+    };
+  }
+
+  // 3. Owner & Admin have universal approval/transition authority for all other stages
   if (role === 'owner' || role === 'admin') {
     return { allowed: true };
   }
 
   const isAssignee = task.assigneeIds.includes(currentUser.id);
   const isCreator = task.creatorId === currentUser.id;
-
-  // 3. Stage: COMPLETE / DONE / CLOSED
-  if (targetStatus.type === 'done' || targetStatus.type === 'closed') {
-    // Only creator (if reviewing others) or Owner/Admin
-    if (isCreator && !isAssignee) {
-      return { allowed: true };
-    }
-    return {
-      allowed: false,
-      reason: 'Approval Required: Only Workspace Owners, Admins, or authorized Reviewers can approve and mark a task as Complete.',
-      requiredRole: 'Owner or Admin',
-    };
-  }
 
   // 4. Stage: IN REVIEW
   if (targetStatus.type === 'review') {

@@ -25,7 +25,7 @@ import { PriorityBadge, priorityConfig } from '../ui/PriorityBadge';
 import { AssigneePicker } from '../ui/AssigneePicker';
 import { DatePickerPopover } from '../ui/DatePickerPopover';
 import { Task, TaskPriority } from '@/lib/types';
-import { canTransitionTaskStatus } from '@/lib/permissions';
+import { canTransitionTaskStatus, canUserViewTask } from '@/lib/permissions';
 
 export function ListView({ listId }: { listId: string }) {
   const {
@@ -90,6 +90,9 @@ export function ListView({ listId }: { listId: string }) {
 
   // Filter tasks belonging to this list (exclude subtasks from top-level list rows)
   const listTasks = tasks.filter((t) => {
+    // Permission filter: space owner sees all, others only see created or assigned tasks
+    if (!canUserViewTask(t, currentUser)) return false;
+
     const matchesList = t.listId === listId && !t.parentTaskId;
     if (!matchesList) return false;
 
@@ -196,7 +199,7 @@ export function ListView({ listId }: { listId: string }) {
                 </div>
 
                 {group.tasks.map((task) => {
-                  const subtasks = tasks.filter((t) => t.parentTaskId === task.id);
+                  const subtasks = tasks.filter((t) => t.parentTaskId === task.id && canUserViewTask(t, currentUser));
                   const isExpanded = !!expandedSubtasks[task.id];
 
                   return (

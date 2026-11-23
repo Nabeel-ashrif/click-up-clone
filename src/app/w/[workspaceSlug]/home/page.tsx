@@ -30,7 +30,7 @@ export default function HomeMyWorkPage() {
     setIsQuickAddOpen,
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'assigned' | 'due' | 'completed'>('assigned');
+  const [activeTab, setActiveTab] = useState<'assigned' | 'created' | 'due' | 'completed'>('assigned');
 
   // Tasks assigned to current user — match by id, username, or email for cross-device compatibility
   const myTasks = tasks.filter((t) => {
@@ -41,6 +41,19 @@ export default function HomeMyWorkPage() {
   });
   const activeTasks = myTasks.filter((t) => t.statusId !== 'st-done');
   const completedTasks = myTasks.filter((t) => t.statusId === 'st-done');
+
+  // Tasks created/assigned by current user to others
+  const createdByMeTasks = tasks.filter((t) => {
+    const isCreator =
+      t.creatorId === currentUser.id ||
+      (currentUser.username && t.creatorId === currentUser.username) ||
+      (currentUser.email && t.creatorId === currentUser.email);
+    const isAssignee =
+      t.assigneeIds.includes(currentUser.id) ||
+      (currentUser.username && t.assigneeIds.includes(currentUser.username)) ||
+      (currentUser.email && t.assigneeIds.includes(currentUser.email));
+    return isCreator && !isAssignee && t.statusId !== 'st-done';
+  });
 
   // Overdue or due soon
   const dueSoonTasks = activeTasks.filter((t) => {
@@ -56,6 +69,8 @@ export default function HomeMyWorkPage() {
   const displayedTasks =
     activeTab === 'assigned'
       ? activeTasks
+      : activeTab === 'created'
+      ? createdByMeTasks
       : activeTab === 'due'
       ? dueSoonTasks
       : completedTasks;
@@ -119,6 +134,17 @@ export default function HomeMyWorkPage() {
                   }`}
                 >
                   Assigned ({activeTasks.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('created')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    activeTab === 'created'
+                      ? 'bg-white text-teal-800 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Assigned by Me ({createdByMeTasks.length})
                 </button>
                 <button
                   type="button"

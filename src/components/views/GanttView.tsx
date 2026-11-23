@@ -3,13 +3,16 @@
 import React from 'react';
 import { Clock, Calendar, ChevronRight } from 'lucide-react';
 import { useApp } from '@/lib/store';
+import { canUserViewTask } from '@/lib/permissions';
 import { PriorityBadge } from '../ui/PriorityBadge';
 import { format, parseISO } from 'date-fns';
 
 export function GanttView({ listId }: { listId: string }) {
-  const { tasks, getStatusById, setSelectedTaskId } = useApp();
+  const { tasks, getStatusById, setSelectedTaskId, currentUser } = useApp();
 
-  const listTasks = tasks.filter((t) => t.listId === listId && !t.parentTaskId);
+  const listTasks = tasks.filter(
+    (t) => t.listId === listId && !t.parentTaskId && canUserViewTask(t, currentUser)
+  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">

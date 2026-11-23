@@ -20,7 +20,7 @@ import { PriorityBadge } from '../ui/PriorityBadge';
 import { AvatarGroup } from '../ui/Avatar';
 import { Task, User } from '@/lib/types';
 import { format, isPast, isToday, parseISO } from 'date-fns';
-import { canTransitionTaskStatus } from '@/lib/permissions';
+import { canTransitionTaskStatus, canUserViewTask } from '@/lib/permissions';
 
 export function BoardView({ listId }: { listId: string }) {
   const {
@@ -51,6 +51,9 @@ export function BoardView({ listId }: { listId: string }) {
 
   // Filter tasks belonging to this list (exclude subtasks from top cards)
   const listTasks = tasks.filter((t) => {
+    // Permission filter: space owner sees all, others only see created or assigned tasks
+    if (!canUserViewTask(t, currentUser)) return false;
+
     const matchesList = t.listId === listId && !t.parentTaskId;
     if (!matchesList) return false;
 

@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
+import { canUserViewTask } from '@/lib/permissions';
 import { TaskPriority, RecurrenceType } from '@/lib/types';
 import { PriorityBadge } from '../ui/PriorityBadge';
 import { StatusBadge } from '../ui/StatusBadge';
@@ -73,7 +74,7 @@ export function QuickAddTaskModal() {
 
   // Available tasks in this space to optionally attach as a subtask
   const spaceTasks = tasks.filter(
-    (t) => spaceListIds.includes(t.listId) && !t.parentTaskId
+    (t) => spaceListIds.includes(t.listId) && !t.parentTaskId && canUserViewTask(t, currentUser)
   );
 
   // Destination Choice: 'list:<listId>' (new top-level task) OR 'parent:<taskId>' (subtask)

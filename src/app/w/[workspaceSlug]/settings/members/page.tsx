@@ -35,7 +35,7 @@ interface MemberRecord {
 }
 
 export default function WorkspaceMembersPage() {
-  const { workspace, currentUser, updateWorkspaceName, showToast } = useApp();
+  const { workspace, currentUser, setCurrentUser, updateWorkspaceName, showToast } = useApp();
 
   const [members, setMembers] = useState<MemberRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -120,12 +120,13 @@ export default function WorkspaceMembersPage() {
     if (!editingMember) return;
 
     try {
+      const isOwnerAccount = editingMember.role === 'owner';
       const res = await fetch(`/api/members/${editingMember.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullName: editFullName.trim(),
-          role: editRole,
+          role: isOwnerAccount ? 'owner' : editRole,
           newPassword: editNewPassword.trim() || undefined,
         }),
       });
@@ -134,6 +135,10 @@ export default function WorkspaceMembersPage() {
       if (!res.ok) {
         showToast(data.error || 'Failed to update member');
         return;
+      }
+
+      if (editingMember.id === currentUser.id) {
+        setCurrentUser({ ...currentUser, fullName: editFullName.trim() });
       }
 
       showToast(`Updated @${editingMember.username}'s account`);
@@ -217,16 +222,37 @@ export default function WorkspaceMembersPage() {
           </p>
         </div>
 
-        {isCurrentUserOwner && (
+        <div className="flex items-center gap-2">
+          {/* Quick Change My Password button */}
           <button
             type="button"
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold rounded-xl shadow-xs transition-all hover:scale-102"
+            onClick={() => {
+              const myRecord = members.find((m) => m.id === currentUser.id);
+              if (myRecord) {
+                setEditingMember(myRecord);
+                setEditFullName(myRecord.fullName);
+                setEditRole(myRecord.role);
+                setEditNewPassword('');
+              }
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 hover:border-teal-700 text-slate-800 text-xs font-bold rounded-xl shadow-2xs transition-all hover:bg-slate-50"
+            title="Change your own password"
           >
-            <UserPlus className="w-4 h-4" />
-            <span>Add Team Member</span>
+            <KeyRound className="w-4 h-4 text-teal-800" />
+            <span>Change My Password</span>
           </button>
-        )}
+
+          {isCurrentUserOwner && (
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold rounded-xl shadow-xs transition-all hover:scale-102"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Add Team Member</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Role Governance Matrix Notice */}
@@ -411,61 +437,68 @@ export default function WorkspaceMembersPage() {
                   )}
                 </div>
 
-                {/* Owner Controls */}
+                {/* Controls Column */}
                 <div className="col-span-3 flex items-center justify-end gap-1.5">
-                  {isCurrentUserOwner && member.role !== 'owner' ? (
-                    <>
-                      {/* Freeze / Unfreeze Button */}
-                      <button
-                        type="button"
-                        onClick={() => toggleFreezeMember(member)}
-                        className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition-colors ${
-                          member.isFrozen
-                            ? 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'
-                            : 'border-slate-200 text-slate-600 hover:bg-slate-100'
-                        }`}
-                        title={member.isFrozen ? 'Un-freeze account' : 'Freeze account (block login)'}
-                      >
-                        {member.isFrozen ? (
-                          <>
-                            <Unlock className="w-3.5 h-3.5 text-rose-700" />
-                            <span className="hidden sm:inline">Unfreeze</span>
-                          </>
-                        ) : (
-                          <>
-                            <Lock className="w-3.5 h-3.5 text-slate-500" />
-                            <span className="hidden sm:inline">Freeze</span>
-                          </>
-                        )}
-                      </button>
+                  {/* Freeze / Unfreeze Button (only for other accounts, never owner) */}
+                  {isCurrentUserOwner && member.role !== 'owner' && (
+                    <button
+                      type="button"
+                      onClick={() => toggleFreezeMember(member)}
+                      className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition-colors ${
+                        member.isFrozen
+                          ? 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+                      }`}
+                      title={member.isFrozen ? 'Un-freeze account' : 'Freeze account (block login)'}
+                    >
+                      {member.isFrozen ? (
+                        <>
+                          <Unlock className="w-3.5 h-3.5 text-rose-700" />
+                          <span className="hidden sm:inline">Unfreeze</span>
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-3.5 h-3.5 text-slate-500" />
+                          <span className="hidden sm:inline">Freeze</span>
+                        </>
+                      )}
+                    </button>
+                  )}
 
-                      {/* Edit Button */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingMember(member);
-                          setEditFullName(member.fullName);
-                          setEditRole(member.role);
-                          setEditNewPassword('');
-                        }}
-                        className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
-                        title="Edit Profile & Password"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </button>
+                  {/* Edit / Change Password Button: available for Owner on ANY account (including their own!) */}
+                  {(isCurrentUserOwner || member.id === currentUser.id) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingMember(member);
+                        setEditFullName(member.fullName);
+                        setEditRole(member.role);
+                        setEditNewPassword('');
+                      }}
+                      className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition-colors ${
+                        member.id === currentUser.id
+                          ? 'border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+                      }`}
+                      title={member.id === currentUser.id ? 'Change My Password / Edit Profile' : 'Edit Profile & Password'}
+                    >
+                      <KeyRound className="w-3.5 h-3.5 text-teal-800" />
+                      <span className="hidden sm:inline">
+                        {member.id === currentUser.id ? 'Change Password' : 'Edit'}
+                      </span>
+                    </button>
+                  )}
 
-                      {/* Delete Button */}
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteMember(member)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                        title="Permanently Delete Account"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </>
-                  ) : (
-                    <span className="text-[11px] text-slate-400 italic">Protected</span>
+                  {/* Delete Button (only for non-owner accounts) */}
+                  {isCurrentUserOwner && member.role !== 'owner' && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteMember(member)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      title="Permanently Delete Account"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   )}
                 </div>
               </div>
@@ -609,15 +642,22 @@ export default function WorkspaceMembersPage() {
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1">Role</label>
-                <select
-                  value={editRole}
-                  onChange={(e) => setEditRole(e.target.value as WorkspaceRole)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-700 font-medium"
-                >
-                  <option value="admin">Admin - Can manage spaces and members</option>
-                  <option value="member">Member - Standard sprint contributor</option>
-                  <option value="viewer">Viewer - Read-only stakeholder</option>
-                </select>
+                {editingMember.role === 'owner' ? (
+                  <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-semibold flex items-center justify-between">
+                    <span>Workspace Owner (Non-transferable)</span>
+                    <ShieldCheck className="w-4 h-4 text-teal-800" />
+                  </div>
+                ) : (
+                  <select
+                    value={editRole}
+                    onChange={(e) => setEditRole(e.target.value as WorkspaceRole)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-700 font-medium"
+                  >
+                    <option value="admin">Admin - Can manage spaces and members</option>
+                    <option value="member">Member - Standard sprint contributor</option>
+                    <option value="viewer">Viewer - Read-only stakeholder</option>
+                  </select>
+                )}
               </div>
 
               <div>

@@ -35,6 +35,7 @@ import { TaskWorkflowStepper } from '@/components/tasks/TaskWorkflowStepper';
 import { defaultStatuses } from '@/lib/mock-data';
 import { format, parseISO, isPast, isToday } from 'date-fns';
 import { Task } from '@/lib/types';
+import { canUserViewTask } from '@/lib/permissions';
 
 // ─── Drill-Down Modal ────────────────────────────────────────────────────────
 
@@ -278,8 +279,12 @@ export default function ExecutiveDashboardPage() {
   const openDrill = (cat: DrillCategory) => setDrillCategory(cat);
   const closeDrill = () => setDrillCategory(null);
 
+  // Scope tasks according to permission governance:
+  // Space Owner sees all; other accounts only see tasks they created/assigned or that are assigned to them
+  const visibleTasks = tasks.filter((t) => canUserViewTask(t, currentUser));
+
   // Filter tasks based on space, status, and member selection
-  const filteredTasks = tasks.filter((t) => {
+  const filteredTasks = visibleTasks.filter((t) => {
     if (selectedSpaceId !== 'all') {
       const space = workspace.spaces.find((s) => s.id === selectedSpaceId);
       const spaceListIds = space
@@ -293,15 +298,15 @@ export default function ExecutiveDashboardPage() {
   });
 
   // Global calculations across workspace
-  const totalTasks = tasks.length;
-  const todoTasks = tasks.filter((t) => t.statusId === 'st-todo');
-  const inProgressTasks = tasks.filter((t) => t.statusId === 'st-progress');
-  const inReviewTasks = tasks.filter((t) => t.statusId === 'st-review');
-  const completedTasks = tasks.filter((t) => t.statusId === 'st-done');
+  const totalTasks = visibleTasks.length;
+  const todoTasks = visibleTasks.filter((t) => t.statusId === 'st-todo');
+  const inProgressTasks = visibleTasks.filter((t) => t.statusId === 'st-progress');
+  const inReviewTasks = visibleTasks.filter((t) => t.statusId === 'st-review');
+  const completedTasks = visibleTasks.filter((t) => t.statusId === 'st-done');
   const completionRate = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
 
   // Critical & overdue tasks
-  const criticalTasks = tasks.filter((t) => {
+  const criticalTasks = visibleTasks.filter((t) => {
     if (t.statusId === 'st-done') return false;
     if (t.priority === 'urgent' || t.priority === 'high') return true;
     if (t.dueDate) {
@@ -318,7 +323,7 @@ export default function ExecutiveDashboardPage() {
   // Determine which tasks to show in the drill-down modal
   const getDrillTasks = (): Task[] => {
     if (!drillCategory) return [];
-    if (drillCategory === 'all') return tasks;
+    if (drillCategory === 'all') return visibleTasks;
     if (drillCategory === 'todo') return todoTasks;
     if (drillCategory === 'in-progress') return inProgressTasks;
     if (drillCategory === 'in-review') return inReviewTasks;
@@ -326,7 +331,7 @@ export default function ExecutiveDashboardPage() {
     if (drillCategory === 'critical') return criticalTasks;
     if (drillCategory.startsWith('member-')) {
       const uid = drillCategory.replace('member-', '');
-      return tasks.filter((t) => t.assigneeIds.includes(uid));
+      return visibleTasks.filter((t) => t.assigneeIds.includes(uid));
     }
     return [];
   };
@@ -367,7 +372,7 @@ export default function ExecutiveDashboardPage() {
       ...space.lists.map((l) => l.id),
       ...space.folders.flatMap((f) => f.lists.map((l) => l.id)),
     ];
-    const spaceTasks = tasks.filter((t) => listIds.includes(t.listId));
+    const spaceTasks = visibleTasks.filter((t) => listIds.includes(t.listId));
     const done = spaceTasks.filter((t) => t.statusId === 'st-done').length;
     const rate = spaceTasks.length > 0 ? Math.round((done / spaceTasks.length) * 100) : 0;
     const defaultList = space.lists[0];
@@ -716,7 +721,7 @@ export default function ExecutiveDashboardPage() {
 
             <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
               {users.map((u) => {
-                const userTasks = tasks.filter((t) => t.assigneeIds.includes(u.id));
+                const userTasks = visibleTasks.filter((t) => t.assigneeIds.includes(u.id));
                 const userDone = userTasks.filter((t) => t.statusId === 'st-done').length;
                 const userInProgress = userTasks.filter((t) => t.statusId === 'st-progress').length;
                 const userInReview = userTasks.filter((t) => t.statusId === 'st-review').length;

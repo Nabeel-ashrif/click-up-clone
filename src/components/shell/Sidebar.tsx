@@ -45,6 +45,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
+import { canUserViewTask } from '@/lib/permissions';
 import { Avatar } from '../ui/Avatar';
 import { PreferencesModal } from '../ui/PreferencesModal';
 
@@ -849,7 +850,10 @@ export function Sidebar() {
                                   pathname?.includes(`/v/g/${list.id}`);
 
                                 const listTasksCount = tasks.filter(
-                                  (t) => t.listId === list.id && t.statusId !== 'st-closed'
+                                  (t) =>
+                                    t.listId === list.id &&
+                                    t.statusId !== 'st-closed' &&
+                                    canUserViewTask(t, currentUser)
                                 ).length;
 
                                 return (
@@ -933,7 +937,10 @@ export function Sidebar() {
                         pathname?.includes(`/v/g/${list.id}`);
 
                       const listTasksCount = tasks.filter(
-                        (t) => t.listId === list.id && t.statusId !== 'st-closed'
+                        (t) =>
+                          t.listId === list.id &&
+                          t.statusId !== 'st-closed' &&
+                          canUserViewTask(t, currentUser)
                       ).length;
 
                       return (

@@ -430,6 +430,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateTask = (taskId: string, updates: Partial<Task>) => {
+    // Permission Rule: ONLY Space Owner or Admin has the right to mark a task as complete
+    if (updates.statusId) {
+      const targetStatus = getStatusById(updates.statusId);
+      if (targetStatus.type === 'done' || targetStatus.type === 'closed' || targetStatus.id === 'st-done') {
+        const role = currentUser.role || 'member';
+        if (role !== 'owner' && role !== 'admin') {
+          showToast('Permission Denied: ONLY Space Owner or Admin has the right to mark a task as complete.');
+          return;
+        }
+      }
+    }
+
     let triggeredRecurring = false;
     let nextScheduledDate = '';
 

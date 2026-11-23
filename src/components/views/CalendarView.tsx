@@ -21,10 +21,11 @@ import {
   parseISO,
 } from 'date-fns';
 import { useApp } from '@/lib/store';
+import { canUserViewTask } from '@/lib/permissions';
 import { StatusBadge } from '../ui/StatusBadge';
 
 export function CalendarView({ listId }: { listId: string }) {
-  const { tasks, getStatusById, setSelectedTaskId, addTask } = useApp();
+  const { tasks, getStatusById, setSelectedTaskId, addTask, currentUser } = useApp();
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const monthStart = startOfMonth(currentDate);
@@ -34,7 +35,9 @@ export function CalendarView({ listId }: { listId: string }) {
 
   const days = eachDayOfInterval({ start: startDate, end: endDate });
 
-  const listTasks = tasks.filter((t) => t.listId === listId && !t.parentTaskId && t.dueDate);
+  const listTasks = tasks.filter(
+    (t) => t.listId === listId && !t.parentTaskId && t.dueDate && canUserViewTask(t, currentUser)
+  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
